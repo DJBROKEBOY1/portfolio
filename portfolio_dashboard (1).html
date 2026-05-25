@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio Intelligence</title>
+<style>
+/* ── Password Gate ── */
+#gate {
+  position:fixed; top:0; left:0; width:100%; height:100%; z-index:99999;
+  background:#120e1e;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Segoe UI',sans-serif;
+}
+#gate::before {
+  content:'';
+  position:absolute; top:-20%; left:-10%; width:60%; height:60%;
+  background:radial-gradient(ellipse,rgba(160,80,255,0.25) 0%,transparent 70%);
+  pointer-events:none;
+}
+#gate::after {
+  content:'';
+  position:absolute; bottom:-20%; right:-10%; width:55%; height:55%;
+  background:radial-gradient(ellipse,rgba(64,208,200,0.2) 0%,transparent 70%);
+  pointer-events:none;
+}
+.gate-box {
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(160,80,255,0.3);
+  border-radius:20px;
+  padding:48px 44px;
+  width:100%;
+  max-width:400px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+  backdrop-filter:blur(20px);
+  box-shadow:0 8px 40px rgba(120,60,220,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.gate-icon {
+  font-size:2.5rem;
+  margin-bottom:16px;
+}
+.gate-title {
+  font-size:1.4rem;
+  font-weight:800;
+  color:rgba(255,255,255,0.95);
+  margin-bottom:4px;
+  letter-spacing:-0.02em;
+}
+.gate-subtitle {
+  font-size:0.8rem;
+  color:rgba(160,120,255,0.7);
+  margin-bottom:32px;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+}
+.gate-input {
+  width:100%;
+  background:rgba(255,255,255,0.07);
+  border:1px solid rgba(160,80,255,0.3);
+  border-radius:12px;
+  padding:14px 18px;
+  font-size:1rem;
+  color:rgba(255,255,255,0.9);
+  font-family:'Segoe UI',sans-serif;
+  outline:none;
+  text-align:center;
+  letter-spacing:0.15em;
+  margin-bottom:16px;
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+.gate-input:focus {
+  border-color:rgba(160,80,255,0.7);
+  box-shadow:0 0 0 3px rgba(160,80,255,0.15);
+}
+.gate-input.error {
+  border-color:rgba(255,80,96,0.7);
+  box-shadow:0 0 0 3px rgba(255,80,96,0.15);
+  animation:shake 0.4s ease;
+}
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}
+}
+.gate-btn {
+  width:100%;
+  background:linear-gradient(135deg,rgba(160,80,255,0.5),rgba(64,208,200,0.4));
+  border:1px solid rgba(160,80,255,0.4);
+  border-radius:12px;
+  padding:14px;
+  font-size:0.9rem;
+  font-weight:700;
+  color:rgba(255,255,255,0.95);
+  font-family:'Segoe UI',sans-serif;
+  cursor:pointer;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  transition:all 0.2s;
+  box-shadow:0 4px 16px rgba(120,60,220,0.3);
+}
+.gate-btn:hover {
+  background:linear-gradient(135deg,rgba(160,80,255,0.7),rgba(64,208,200,0.6));
+  box-shadow:0 6px 24px rgba(120,60,220,0.5);
+  transform:translateY(-1px);
+}
+.gate-btn:active { transform:translateY(0); }
+.gate-error {
+  font-size:0.75rem;
+  color:rgba(255,100,120,0.9);
+  margin-top:12px;
+  height:18px;
+  font-weight:600;
+  letter-spacing:0.04em;
+}
+</style>
+</head>
+<body>
+
+<!-- ── Password Gate ── -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-icon">💼</div>
+    <div class="gate-title">Portfolio Intelligence</div>
+    <div class="gate-subtitle">Private Dashboard</div>
+    <input
+      class="gate-input"
+      id="gateInput"
+      type="password"
+      placeholder="Enter password"
+      onkeydown="if(event.key==='Enter')checkPassword()"
+      autocomplete="current-password"
+    >
+    <button class="gate-btn" onclick="checkPassword()">Unlock Dashboard</button>
+    <div class="gate-error" id="gateError"></div>
+  </div>
+</div>
+
+<script>
+// ── SET YOUR PASSWORD HERE ────────────────────────────────────────────────────
+const DASHBOARD_PASSWORD = "changeme123";
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Check if already unlocked this session
+if (sessionStorage.getItem('portfolio_unlocked') === 'true') {
+  document.getElementById('gate').style.display = 'none';
+}
+
+function checkPassword() {
+  const input = document.getElementById('gateInput');
+  const error = document.getElementById('gateError');
+  if (input.value === DASHBOARD_PASSWORD) {
+    sessionStorage.setItem('portfolio_unlocked', 'true');
+    document.getElementById('gate').style.display = 'none';
+    error.textContent = '';
+  } else {
+    input.classList.remove('error');
+    void input.offsetWidth; // force reflow to restart animation
+    input.classList.add('error');
+    error.textContent = 'Incorrect password — try again';
+    input.value = '';
+    input.focus();
+    setTimeout(() => input.classList.remove('error'), 500);
+  }
+}
+</script>
+
+<title>Portfolio Intelligence</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #120e1e;
+  --bg2: #17122a;
+  --bg3: #1e1636;
+  --card: rgba(255,255,255,0.05);
+  --card2: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.1);
+  --border2: rgba(255,255,255,0.18);
+  --text: rgba(255,255,255,0.95);
+  --text2: rgba(180,160,255,0.85);
+  --text3: rgba(140,110,220,0.65);
+  --gold: #c8a0ff;
+  --gold2: #a070ff;
+  --teal: #40d0c0;
+  --teal2: #20908a;
+  --blue: #80a0ff;
+  --blue2: #5070cc;
+  --red: #ff6080;
+  --red2: #cc3050;
+  --green: #40d090;
+  --green2: #209060;
+  --purple: #c080ff;
+  --orange: #ff90a0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 28px;
+  position: relative;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: -20%;
+  left: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(ellipse, rgba(160,80,255,0.18) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -20%;
+  right: -10%;
+  width: 55%;
+  height: 55%;
+  background: radial-gradient(ellipse, rgba(64,208,200,0.14) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+body > * { position: relative; z-index: 1; }
+
+/* ── Header ── */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.header-left h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 2.6rem;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.header-left h1 span { color: var(--gold); font-style: italic; }
+.header-sub { font-size: 0.75rem; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; }
+.header-total { text-align: right; }
+.header-total-val {
+  font-family: 'Instrument Serif', serif;
+  font-size: 3rem;
+  color: var(--gold);
+  line-height: 1;
+}
+.header-total-label { font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+.header-gains {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 6px;
+}
+.header-gains.pos { color: var(--green); }
+.header-gains.neg { color: var(--red); }
+
+/* ── Nav Tabs ── */
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 28px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 14px;
+  padding: 4px;
+  border: 1px solid rgba(160,80,255,0.2);
+  width: fit-content;
+  backdrop-filter: blur(12px);
+  flex-wrap: wrap;
+}
+.nav-tab {
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: rgba(160,120,255,0.6);
+  transition: all 0.2s;
+  border: none;
+  background: transparent;
+}
+.nav-tab.active {
+  background: linear-gradient(135deg, rgba(160,80,255,0.3), rgba(64,208,200,0.2));
+  color: rgba(255,255,255,0.95);
+  border: 1px solid rgba(160,80,255,0.4);
+  box-shadow: 0 2px 12px rgba(120,60,220,0.3);
+}
+.nav-tab:hover:not(.active) { color: rgba(200,160,255,0.85); background: rgba(255,255,255,0.04); }
+
+/* ── Sections ── */
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── Cards ── */
+.card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 18px;
+  padding: 22px;
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.07);
+}
+.card h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.2rem;
+  color: rgba(255,255,255,0.95);
+  margin-bottom: 4px;
+}
+.card-desc { font-size: 0.72rem; color: rgba(160,120,255,0.65); margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ── Grid layouts ── */
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+.mb24 { margin-bottom: 24px; }
+
+/* ── Stat cards ── */
+.stat-card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,0.1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.07);
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent, var(--gold));
+}
+.stat-label { font-size: 0.65rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.stat-value { font-family: 'Instrument Serif', serif; font-size: 1.8rem; color: var(--text); line-height: 1; margin-bottom: 4px; }
+.stat-sub { font-size: 0.7rem; color: var(--text3); }
+.stat-change { font-size: 0.75rem; font-weight: 700; margin-top: 6px; }
+.stat-change.pos { color: var(--green); }
+.stat-change.neg { color: var(--red); }
+.stat-bar { height: 3px; background: var(--bg); border-radius: 999px; margin-top: 10px; overflow: hidden; }
+.stat-bar-fill { height: 100%; border-radius: 999px; background: var(--accent, var(--gold)); }
+
+/* ── Account cards ── */
+.account-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
+.account-card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-top: 3px solid var(--acc-color, var(--gold));
+  backdrop-filter: blur(16px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.acc-type-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  background: var(--badge-bg, rgba(240,192,96,0.15));
+  color: var(--acc-color, var(--gold));
+}
+.acc-name { font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.acc-value { font-family: 'Instrument Serif', serif; font-size: 1.5rem; color: var(--acc-color, var(--gold)); margin-bottom: 4px; }
+.acc-pct { font-size: 0.7rem; color: var(--text3); }
+.acc-bar { height: 3px; background: var(--bg); border-radius: 999px; margin-top: 10px; overflow: hidden; }
+.acc-bar-fill { height: 100%; border-radius: 999px; background: var(--acc-color, var(--gold)); }
+.acc-holdings { font-size: 0.68rem; color: var(--text3); margin-top: 6px; }
+
+/* ── Holdings table ── */
+.holdings-table-wrap { overflow-x: auto; }
+table.htable { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+table.htable th {
+  text-align: left; color: var(--text3); font-weight: 600; font-size: 0.65rem;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.1);
+  background: rgba(30,20,60,0.6);
+  backdrop-filter: blur(8px);
+}
+table.htable th:not(:first-child) { text-align: right; }
+table.htable td { padding: 10px 12px; border-bottom: 1px solid var(--bg2); color: var(--text2); vertical-align: middle; }
+table.htable td:not(:first-child) { text-align: right; }
+table.htable tr:hover td { background: var(--card2); }
+table.htable tr:last-child td { border-bottom: none; }
+.ticker-badge {
+  display: inline-block;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-right: 8px;
+}
+.pos-gain { color: var(--green); font-weight: 600; }
+.pos-loss { color: var(--red); font-weight: 600; }
+.type-etf { color: var(--teal); }
+.type-stock { color: var(--blue); }
+.type-mutual { color: var(--purple); }
+.type-bond { color: var(--text3); }
+.type-other { color: var(--orange); }
+
+/* ── Exposure table ── */
+.exposure-bar-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--bg2); }
+.exposure-bar-row:last-child { border-bottom: none; }
+.exp-rank { font-size: 0.65rem; color: var(--text3); min-width: 20px; }
+.exp-ticker { font-size: 0.78rem; font-weight: 700; color: var(--gold); min-width: 52px; }
+.exp-name { font-size: 0.72rem; color: var(--text2); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.exp-track { flex: 2; height: 6px; background: var(--bg); border-radius: 999px; overflow: hidden; }
+.exp-fill { height: 100%; border-radius: 999px; }
+.exp-direct { font-size: 0.68rem; color: var(--teal); min-width: 70px; text-align: right; }
+.exp-etf { font-size: 0.68rem; color: var(--blue); min-width: 70px; text-align: right; }
+.exp-total { font-size: 0.78rem; font-weight: 700; color: var(--text); min-width: 80px; text-align: right; }
+.exp-pct { font-size: 0.68rem; color: var(--text3); min-width: 50px; text-align: right; }
+
+/* ── Sector bars ── */
+.sector-list { display: flex; flex-direction: column; gap: 10px; }
+.sector-row { }
+.sector-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+.sector-name { font-size: 0.75rem; font-weight: 600; color: var(--text); }
+.sector-pct { font-size: 0.78rem; font-weight: 700; }
+.sector-track { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; }
+.sector-fill { height: 100%; border-radius: 999px; }
+
+/* ── Overlap cards ── */
+.overlap-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.overlap-card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px);
+}
+.overlap-pair { font-size: 0.78rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.overlap-pct-val { font-family: 'Instrument Serif', serif; font-size: 1.6rem; margin-bottom: 4px; }
+.overlap-desc { font-size: 0.68rem; color: var(--text3); }
+.overlap-bar { height: 5px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+.overlap-fill { height: 100%; border-radius: 999px; }
+.high-overlap { color: var(--red); }
+.med-overlap { color: var(--orange); }
+.low-overlap { color: var(--green); }
+
+/* ── P&L cards ── */
+.pnl-positive { background: rgba(64,208,128,0.07); border-color: rgba(64,208,128,0.2); }
+.pnl-negative { background: rgba(255,80,96,0.07); border-color: rgba(255,80,96,0.2); }
+
+/* ── Charts ── */
+.chart-wrap { position: relative; }
+
+/* ── Risk badges ── */
+.risk-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.risk-high { background: rgba(255,80,96,0.15); color: var(--red); }
+.risk-med  { background: rgba(255,128,64,0.15); color: var(--orange); }
+.risk-low  { background: rgba(64,208,128,0.15); color: var(--green); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); border-radius: 999px; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 999px; }
+
+/* ── Health Score ── */
+.score-ring { position:relative; width:160px; height:160px; margin:0 auto 16px; }
+.score-ring svg { transform:rotate(-90deg); }
+.score-ring-text { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+.score-letter { font-family:'Instrument Serif',serif; font-size:3.5rem; line-height:1; }
+.score-num { font-size:0.75rem; color:var(--text3); }
+.health-factor { display:flex; align-items:center; gap:12px; padding:12px 14px; background:rgba(255,255,255,0.04); border-radius:10px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.08); backdrop-filter:blur(8px); }
+.hf-label { flex:1; font-size:0.8rem; font-weight:600; color:var(--text); }
+.hf-score { font-size:0.78rem; font-weight:700; min-width:40px; text-align:right; }
+.hf-bar { flex:1; height:6px; background:var(--bg); border-radius:999px; overflow:hidden; }
+.hf-fill { height:100%; border-radius:999px; }
+.hf-note { font-size:0.68rem; color:var(--text3); flex:1.5; }
+
+/* ── Rebalance ── */
+.reb-row { display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--bg3); border-radius:10px; margin-bottom:8px; border-left:3px solid var(--border2); }
+.reb-ticker { font-weight:700; color:var(--gold); min-width:55px; font-size:0.82rem; }
+.reb-action { font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:4px; min-width:50px; text-align:center; }
+.reb-buy { background:rgba(64,208,128,0.15); color:var(--green); }
+.reb-sell { background:rgba(255,80,96,0.15); color:var(--red); }
+.reb-hold { background:rgba(240,192,96,0.15); color:var(--gold); }
+.reb-detail { flex:1; font-size:0.72rem; color:var(--text2); }
+.reb-amount { font-size:0.78rem; font-weight:700; color:var(--text); min-width:90px; text-align:right; }
+
+/* ── Dividends ── */
+.div-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+.div-stat { background:var(--bg3); border-radius:10px; padding:14px; border:1px solid var(--border); text-align:center; }
+.div-val { font-family:'Instrument Serif',serif; font-size:1.6rem; color:var(--green); margin-bottom:2px; }
+.div-label { font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; }
+
+/* ── What-If ── */
+.whatif-controls { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+.whatif-field { background:rgba(255,255,255,0.05); backdrop-filter:blur(8px); border-radius:10px; padding:14px; border:1px solid var(--border); }
+.whatif-field label { display:block; font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; }
+.whatif-field select, .whatif-field input[type=range] { width:100%; background:rgba(255,255,255,0.06); border:1px solid var(--border2); border-radius:8px; padding:7px 12px; font-size:0.82rem; color:var(--text); font-family:'Syne',sans-serif; outline:none; cursor:pointer; }
+.whatif-val { font-size:1.1rem; font-weight:700; color:var(--gold); margin-top:6px; }
+.wi-result-card { background:var(--bg3); border-radius:12px; padding:16px; border:1px solid var(--border); text-align:center; }
+.wi-result-val { font-family:'Instrument Serif',serif; font-size:1.8rem; margin-bottom:4px; }
+.wi-result-label { font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; }
+.wi-result-change { font-size:0.8rem; font-weight:700; margin-top:4px; }
+
+/* ── Tax Lots ── */
+.tax-badge { display:inline-block; font-size:0.62rem; font-weight:700; padding:2px 7px; border-radius:4px; }
+.lt-gain { background:rgba(64,208,128,0.15); color:var(--green); }
+.st-gain { background:rgba(255,128,64,0.15); color:var(--orange); }
+.lt-loss { background:rgba(64,208,128,0.15); color:var(--teal); }
+.st-loss { background:rgba(255,80,96,0.15); color:var(--red); }
+.unknown { background:rgba(136,144,176,0.15); color:var(--text3); }
+
+/* ── Benchmark ── */
+.bench-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+.bench-card { background:var(--bg3); border-radius:10px; padding:14px; border:1px solid var(--border); text-align:center; }
+.bench-val { font-family:'Instrument Serif',serif; font-size:1.5rem; margin-bottom:2px; }
+.bench-label { font-size:0.65rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; }
+.bench-vs { font-size:0.72rem; font-weight:700; margin-top:4px; }
+.bench-win { color:var(--green); }
+.bench-lose { color:var(--red); }
+
+
+@media(max-width:900px){
+  .grid-4,.grid-3,.account-grid,.overlap-grid { grid-template-columns: 1fr 1fr; }
+  .grid-2-1 { grid-template-columns: 1fr; }
+  .header { flex-direction:column; gap:16px; }
+  .header-total { text-align:left; }
+}
+@media(max-width:600px){
+  .grid-4,.grid-3,.grid-2,.account-grid,.overlap-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <h1>Portfolio <span>Intelligence</span></h1>
+    <div class="header-sub">As of May 24, 2026 &nbsp;·&nbsp; 7 accounts &nbsp;·&nbsp; All values in USD</div>
+  </div>
+  <div class="header-total">
+    <div class="header-total-val">$441,652</div>
+    <div class="header-total-label">Total Portfolio Value</div>
+    <div class="header-gains pos">▲ $131,244 &nbsp;·&nbsp; +42.3% total return</div>
+  </div>
+</div>
+
+<!-- Nav -->
+<div class="nav-tabs">
+  <button class="nav-tab active" onclick="showSection('overview')">Overview</button>
+  <button class="nav-tab" onclick="showSection('holdings')">All Holdings</button>
+  <button class="nav-tab" onclick="showSection('exposure')">Stock Exposure</button>
+  <button class="nav-tab" onclick="showSection('sectors')">Sectors</button>
+  <button class="nav-tab" onclick="showSection('overlap')">ETF Overlap</button>
+  <button class="nav-tab" onclick="showSection('pnl')">P&amp;L</button>
+  <button class="nav-tab" onclick="showSection('health')">🏆 Health Score</button>
+  <button class="nav-tab" onclick="showSection('rebalance')">⚖️ Rebalance</button>
+  <button class="nav-tab" onclick="showSection('dividends')">💸 Dividends</button>
+  <button class="nav-tab" onclick="showSection('whatif')">🎯 What-If</button>
+  <button class="nav-tab" onclick="showSection('taxes')">🧾 Tax Lots</button>
+  <button class="nav-tab" onclick="showSection('benchmark')">📊 Benchmark</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION: OVERVIEW
+════════════════════════════════════════════════════ -->
+<div class="section active" id="sec-overview">
+
+  <!-- Top stats -->
+  <div class="grid-4">
+    <div class="stat-card" style="--accent:var(--gold)">
+      <div class="stat-label">Total Portfolio</div>
+      <div class="stat-value">$441.7K</div>
+      <div class="stat-sub">Across 7 accounts</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:100%"></div></div>
+    </div>
+    <div class="stat-card" style="--accent:var(--green)">
+      <div class="stat-label">Unrealized Gains</div>
+      <div class="stat-value">$131.2K</div>
+      <div class="stat-change pos">▲ +42.3% overall</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:75%;background:var(--green)"></div></div>
+    </div>
+    <div class="stat-card" style="--accent:var(--teal)">
+      <div class="stat-label">ETF Exposure</div>
+      <div class="stat-value">$316.3K</div>
+      <div class="stat-sub">71.6% of portfolio</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:72%;background:var(--teal)"></div></div>
+    </div>
+    <div class="stat-card" style="--accent:var(--blue)">
+      <div class="stat-label">Individual Stocks</div>
+      <div class="stat-value">$76.4K</div>
+      <div class="stat-sub">17.3% of portfolio</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:17%;background:var(--blue)"></div></div>
+    </div>
+  </div>
+
+  <!-- Account breakdown -->
+  <div style="margin-bottom:8px;font-size:0.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em">Account Breakdown</div>
+  <div class="account-grid">
+    <div class="account-card" style="--acc-color:#40d0b0;--badge-bg:rgba(64,208,176,0.12)">
+      <div class="acc-type-badge">Taxable Brokerage</div>
+      <div class="acc-name">Vanguard Brokerage 1</div>
+      <div class="acc-value">$275,299</div>
+      <div class="acc-pct">62.3% of portfolio</div>
+      <div class="acc-bar"><div class="acc-bar-fill" style="width:62%"></div></div>
+      <div class="acc-holdings">VTI · VXUS · VEU · VOO · VXF · VB</div>
+    </div>
+    <div class="account-card" style="--acc-color:#f0c060;--badge-bg:rgba(240,192,96,0.12)">
+      <div class="acc-type-badge">Taxable Brokerage</div>
+      <div class="acc-name">Schwab Brokerage</div>
+      <div class="acc-value">$35,376</div>
+      <div class="acc-pct">8.0% of portfolio</div>
+      <div class="acc-bar"><div class="acc-bar-fill" style="width:8%"></div></div>
+      <div class="acc-holdings">SPYM · XLK · SLV · XLRE</div>
+    </div>
+    <div class="account-card" style="--acc-color:#5080ff;--badge-bg:rgba(80,128,255,0.12)">
+      <div class="acc-type-badge">Taxable Brokerage</div>
+      <div class="acc-name">Vanguard Brokerage 2</div>
+      <div class="acc-value">$25,269</div>
+      <div class="acc-pct">5.7% of portfolio</div>
+      <div class="acc-bar"><div class="acc-bar-fill" style="width:6%;background:var(--blue)"></div></div>
+      <div class="acc-holdings">VGT · VTI · XLRE · AAPL · AMD · NVO · RGTI</div>
+    </div>
+    <div class="account-card" style="--acc-color:#9060ff;--badge-bg:rgba(144,96,255,0.12)">
+      <div class="acc-type-badge">Roth IRA — Tax Free</div>
+      <div class="acc-name">Vanguard Roth IRA</div>
+      <div class="acc-value">$37,746</div>
+      <div class="acc-pct">8.5% of portfolio</div>
+      <div class="acc-bar"><div class="acc-bar-fill" style="width:9%;background:var(--purple)"></div></div>
+      <div class="acc-holdings">VLXVX · VGT · AAPL</div>
+    </div>
+    <div class="account-card" style="--acc-color:#ff8040;--badge-bg:rgba(255,128,64,0.12)">
+      <div class="acc-type-badge">Taxable Brokerage</div>
+      <div class="acc-name">Webull Brokerage</div>
+      <div class="acc-value">$18,908</div>
+      <div class="acc-pct">4.3% of portfolio</div>
+      <div class="acc-bar"><div class="acc-bar-fill" style="width:4%;background:var(--orange)"></div></div>
+      <div class="acc-holdings">AAPL · AMZN · AVGO · GOOGL · NVDA · MSFT + 11 more</div>
+    </div>
+    <div class="account-card" style="--acc-color:#40d080;--badge-bg:rgba(64,208,128,0.12)">
+      <div class="acc-type-badge">401k — Pre-Tax</div>
+      <div class="acc-name">Old 401k</div>
+      <div class="acc-value">$26,309</div>
+      <div class="acc-pct">6.0% of portfolio</div>
+      <div class="acc-bar"><div class="acc-bar-fill" style="width:6%;background:var(--green)"></div></div>
+      <div class="acc-holdings">American Funds 2050 Target Date R6</div>
+    </div>
+    <div class="account-card" style="--acc-color:#40d080;--badge-bg:rgba(64,208,128,0.12)">
+      <div class="acc-type-badge">401k — Pre-Tax</div>
+      <div class="acc-name">Current 401k (vested)</div>
+      <div class="acc-value">$22,745</div>
+      <div class="acc-pct">5.2% of portfolio</div>
+      <div class="acc-bar"><div class="acc-bar-fill" style="width:5%;background:var(--green)"></div></div>
+      <div class="acc-holdings">American Funds 2050 Target Date</div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="grid-2">
+    <div class="card">
+      <h2>Asset Allocation</h2>
+      <div class="card-desc">By account type</div>
+      <canvas id="allocChart" height="200"></canvas>
+    </div>
+    <div class="card">
+      <h2>Portfolio Composition</h2>
+      <div class="card-desc">ETFs vs stocks vs other</div>
+      <canvas id="compChart" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- Tax treatment -->
+  <div class="card">
+    <h2>Tax Treatment Summary</h2>
+    <div class="card-desc">How your money is sheltered</div>
+    <div class="grid-3" style="margin-bottom:0">
+      <div style="background:var(--bg3);border-radius:10px;padding:16px;border:1px solid var(--border)">
+        <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Taxable Accounts</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:1.6rem;color:var(--text);margin-bottom:2px">$354,852</div>
+        <div style="font-size:0.7rem;color:var(--text3)">80.4% — gains taxed at cap gains rates</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:16px;border:1px solid rgba(144,96,255,0.3)">
+        <div style="font-size:0.65rem;color:var(--purple);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Roth IRA — Tax Free Growth</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:1.6rem;color:var(--purple);margin-bottom:2px">$37,746</div>
+        <div style="font-size:0.7rem;color:var(--text3)">8.5% — withdrawals tax-free in retirement</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:16px;border:1px solid rgba(64,208,128,0.3)">
+        <div style="font-size:0.65rem;color:var(--green);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">401k — Tax Deferred</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:1.6rem;color:var(--green);margin-bottom:2px">$49,054</div>
+        <div style="font-size:0.7rem;color:var(--text3)">11.1% — taxed as income on withdrawal</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION: ALL HOLDINGS
+════════════════════════════════════════════════════ -->
+<div class="section" id="sec-holdings">
+
+  <div class="card mb24">
+    <h2>All Holdings</h2>
+    <div class="card-desc">Every position across all 7 accounts — sorted by value</div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <input id="holdingsSearch" placeholder="Search ticker or name..." oninput="filterHoldings()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:0.8rem;color:var(--text);font-family:'Syne',sans-serif;outline:none;flex:1;min-width:180px;">
+      <select id="holdingsFilter" onchange="filterHoldings()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:0.78rem;color:var(--text);font-family:'Syne',sans-serif;outline:none;cursor:pointer;">
+        <option value="">All Types</option>
+        <option value="ETF">ETFs</option>
+        <option value="Stock">Stocks</option>
+        <option value="Mutual">Mutual Funds</option>
+        <option value="Bond">Bonds/Treasury</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="holdings-table-wrap">
+      <table class="htable" id="holdingsTable">
+        <thead>
+          <tr>
+            <th>Ticker / Name</th>
+            <th>Account</th>
+            <th>Type</th>
+            <th>Shares</th>
+            <th>Price</th>
+            <th>Market Value</th>
+            <th>Cost Basis</th>
+            <th>Gain/Loss $</th>
+            <th>Gain/Loss %</th>
+            <th>% of Portfolio</th>
+          </tr>
+        </thead>
+        <tbody id="holdingsTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION: STOCK EXPOSURE
+════════════════════════════════════════════════════ -->
+<div class="section" id="sec-exposure">
+
+  <div class="card mb24">
+    <h2>Underlying Stock Exposure</h2>
+    <div class="card-desc">Direct shares + ETF-implied shares combined · Top 20 holdings across entire portfolio</div>
+    <div style="display:flex;gap:16px;margin-bottom:12px;font-size:0.7rem;color:var(--text3);flex-wrap:wrap">
+      <span style="color:var(--teal)">■ Direct value / direct shares</span>
+      <span style="color:var(--blue)">■ ETF-implied value / implied shares</span>
+      <span style="color:var(--gold)">■ Total combined</span>
+    </div>
+    <!-- Column headers -->
+    <div style="display:flex;align-items:center;gap:12px;padding:6px 0 8px;border-bottom:1px solid var(--border);margin-bottom:4px;font-size:0.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em">
+      <span style="min-width:20px"></span>
+      <span style="min-width:52px">Ticker</span>
+      <span style="flex:1">Company</span>
+      <span style="flex:2">Exposure Bar</span>
+      <span style="color:var(--teal);min-width:90px;text-align:right">Direct $</span>
+      <span style="color:var(--teal);min-width:80px;text-align:right">Direct Shares</span>
+      <span style="color:var(--blue);min-width:90px;text-align:right">ETF-Implied $</span>
+      <span style="color:var(--blue);min-width:90px;text-align:right">Implied Shares</span>
+      <span style="color:var(--gold);min-width:85px;text-align:right">Total Value</span>
+      <span style="color:var(--gold);min-width:80px;text-align:right">Total Shares</span>
+      <span style="min-width:50px;text-align:right">% Port.</span>
+    </div>
+    <div id="exposureList"></div>
+  </div>
+
+  <div class="card">
+    <h2>Apple Deep Dive — AAPL</h2>
+    <div class="card-desc">Your most-held stock — direct + ETF exposure breakdown</div>
+    <div id="aaplBreakdown"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION: SECTORS
+════════════════════════════════════════════════════ -->
+<div class="section" id="sec-sectors">
+  <div class="grid-2">
+    <div class="card">
+      <h2>Sector Allocation</h2>
+      <div class="card-desc">Estimated across all holdings including ETF look-through</div>
+      <div class="sector-list" id="sectorList"></div>
+    </div>
+    <div class="card">
+      <h2>Sector Chart</h2>
+      <div class="card-desc">Visual breakdown</div>
+      <canvas id="sectorChart" height="260"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Geographic Exposure</h2>
+    <div class="card-desc">US vs International</div>
+    <div class="grid-3" style="margin-bottom:0">
+      <div style="background:var(--bg3);border-radius:10px;padding:16px;border:1px solid var(--border);text-align:center">
+        <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">US Domestic</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:2rem;color:var(--blue)">72%</div>
+        <div style="font-size:0.7rem;color:var(--text3)">~$318K</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:16px;border:1px solid var(--border);text-align:center">
+        <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">International</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:2rem;color:var(--teal)">26%</div>
+        <div style="font-size:0.7rem;color:var(--text3)">~$115K (VXUS, VEU)</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:16px;border:1px solid var(--border);text-align:center">
+        <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Commodities/Other</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:2rem;color:var(--gold)">2%</div>
+        <div style="font-size:0.7rem;color:var(--text3)">~$9K (SLV, Metals)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION: ETF OVERLAP
+════════════════════════════════════════════════════ -->
+<div class="section" id="sec-overlap">
+
+  <div class="card mb24">
+    <h2>ETF Overlap Analysis</h2>
+    <div class="card-desc">How much overlap exists between your ETFs — high overlap = redundant holdings</div>
+    <div class="overlap-grid" id="overlapGrid"></div>
+  </div>
+
+  <div class="card">
+    <h2>Concentration Risk Flags</h2>
+    <div class="card-desc">Areas where your portfolio may be over-concentrated</div>
+    <div id="riskFlags"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SECTION: P&L
+════════════════════════════════════════════════════ -->
+<div class="section" id="sec-pnl">
+
+  <div class="grid-4">
+    <div class="stat-card" style="--accent:var(--green)">
+      <div class="stat-label">Total Unrealized Gain</div>
+      <div class="stat-value" style="color:var(--green)">$131.2K</div>
+      <div class="stat-sub">vs cost basis</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--teal)">
+      <div class="stat-label">Best Performer</div>
+      <div class="stat-value" style="color:var(--teal)">VTI</div>
+      <div class="stat-change pos">+$62,913 · +62.6%</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--red)">
+      <div class="stat-label">Worst Performer</div>
+      <div class="stat-value" style="color:var(--red)">HL</div>
+      <div class="stat-change neg">-$439 · -49%</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--gold)">
+      <div class="stat-label">401k Rate of Return</div>
+      <div class="stat-value" style="color:var(--gold)">8.38%</div>
+      <div class="stat-sub">YTD since Jan 2026</div>
+    </div>
+  </div>
+
+  <div class="card mb24">
+    <h2>P&amp;L by Position</h2>
+    <div class="card-desc">Sorted by dollar gain — winners and losers</div>
+    <div class="holdings-table-wrap">
+      <table class="htable" id="pnlTable">
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Name</th>
+            <th>Account</th>
+            <th>Market Value</th>
+            <th>Gain/Loss $</th>
+            <th>Gain/Loss %</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="pnlTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── ALL HOLDINGS DATA ────────────────────────────────────────────────────────
+const TOTAL = 441652;
+
+const HOLDINGS = [
+  // Vanguard Brokerage 1
+  {ticker:'VTI', name:'Vanguard Total Stock Market ETF', shares:441.144, price:366.79, value:161807.13, cost:99506.05, gain:62301.08, gainPct:62.61, account:'Vanguard Brokerage 1', type:'ETF'},
+  {ticker:'VXUS', name:'Vanguard Total International ETF', shares:1282.718, price:84.46, value:108338.37, cost:72516.26, gain:35822.11, gainPct:49.4, account:'Vanguard Brokerage 1', type:'ETF'},
+  {ticker:'VEU', name:'Vanguard FTSE All-World ex-US ETF', shares:46.753, price:82.44, value:3854.33, cost:2768.77, gain:1085.56, gainPct:39.21, account:'Vanguard Brokerage 1', type:'ETF'},
+  {ticker:'VOO', name:'Vanguard S&P 500 ETF', shares:1.337, price:685.55, value:916.58, cost:845.23, gain:71.35, gainPct:8.44, account:'Vanguard Brokerage 1', type:'ETF'},
+  {ticker:'VXF', name:'Vanguard Extended Market ETF', shares:1.227, price:230.82, value:283.12, cost:261.19, gain:21.93, gainPct:8.4, account:'Vanguard Brokerage 1', type:'ETF'},
+  {ticker:'VB', name:'Vanguard Small-Cap ETF', shares:0.346, price:289.09, value:100.08, cost:88.82, gain:11.26, gainPct:12.68, account:'Vanguard Brokerage 1', type:'ETF'},
+  // Schwab
+  {ticker:'SPYM', name:'SPDR Portfolio S&P 500 ETF', shares:341.742, price:87.75, value:29987.87, cost:26743.84, gain:3244.03, gainPct:12.13, account:'Schwab Brokerage', type:'ETF'},
+  {ticker:'XLK', name:'Technology Select Sector SPDR ETF', shares:20, price:180.39, value:3607.80, cost:3314.93, gain:292.87, gainPct:8.83, account:'Schwab Brokerage', type:'ETF'},
+  {ticker:'SLV', name:'iShares Silver Trust', shares:17, price:68.36, value:1162.12, cost:1016.83, gain:145.29, gainPct:14.29, account:'Schwab Brokerage', type:'ETF'},
+  {ticker:'XLRE', name:'Real Estate Select Sector SPDR ETF', shares:13, price:44.56, value:579.28, cost:536.13, gain:43.15, gainPct:8.05, account:'Schwab Brokerage', type:'ETF'},
+  // Vanguard Brokerage 2
+  {ticker:'VGT', name:'Vanguard Information Technology ETF', shares:155.493, price:115.75, value:17998.27, cost:11037.51, gain:6960.76, gainPct:63.06, account:'Vanguard Brokerage 2', type:'ETF'},
+  {ticker:'VTI', name:'Vanguard Total Stock Market ETF', shares:8.676, price:366.79, value:3182.20, cost:2569.85, gain:612.35, gainPct:23.83, account:'Vanguard Brokerage 2', type:'ETF'},
+  {ticker:'XLRE', name:'Real Estate Select Sector SPDR ETF', shares:17.09, price:44.56, value:761.53, cost:691.36, gain:70.17, gainPct:10.15, account:'Vanguard Brokerage 2', type:'ETF'},
+  {ticker:'AAPL', name:'Apple Inc', shares:2.019, price:308.82, value:623.51, cost:347.59, gain:275.92, gainPct:79.38, account:'Vanguard Brokerage 2', type:'Stock'},
+  {ticker:'AMD', name:'Advanced Micro Devices', shares:2.0, price:467.51, value:935.02, cost:419.06, gain:515.96, gainPct:123.12, account:'Vanguard Brokerage 2', type:'Stock'},
+  {ticker:'NVO', name:'Novo Nordisk AS ADR', shares:5.258, price:44.96, value:236.40, cost:682.46, gain:-446.06, gainPct:-65.36, account:'Vanguard Brokerage 2', type:'Stock'},
+  {ticker:'RGTI', name:'Rigetti Computing Inc', shares:58.0, price:26.42, value:1532.36, cost:458.16, gain:1074.20, gainPct:234.46, account:'Vanguard Brokerage 2', type:'Stock'},
+  // Roth IRA
+  {ticker:'VLXVX', name:'Vanguard Target Retirement 2065 Fund', shares:770.869, price:43.92, value:33856.57, cost:26166.63, gain:7689.94, gainPct:29.39, account:'Vanguard Roth IRA', type:'Mutual'},
+  {ticker:'VGT', name:'Vanguard Information Technology ETF', shares:22.833, price:115.75, value:2642.94, cost:2102.02, gain:540.92, gainPct:25.73, account:'Vanguard Roth IRA', type:'ETF'},
+  {ticker:'AAPL', name:'Apple Inc', shares:4.038, price:308.82, value:1247.02, cost:703.65, gain:543.37, gainPct:77.22, account:'Vanguard Roth IRA', type:'Stock'},
+  // Webull
+  {ticker:'AAPL', name:'Apple Inc', shares:3.078, price:308.40, value:949.36, cost:674.18, gain:275.18, gainPct:40.82, account:'Webull', type:'Stock'},
+  {ticker:'AMZN', name:'Amazon.com Inc', shares:6.233, price:265.40, value:1654.12, cost:1250.31, gain:403.81, gainPct:32.30, account:'Webull', type:'Stock'},
+  {ticker:'AVGO', name:'Broadcom Inc', shares:7, price:412.85, value:2889.95, cost:1603.88, gain:1286.07, gainPct:80.19, account:'Webull', type:'Stock'},
+  {ticker:'CDE', name:'Coeur Mining Inc', shares:33, price:17.58, value:580.14, cost:882.00, gain:-301.85, gainPct:-34.22, account:'Webull', type:'Stock'},
+  {ticker:'CRWD', name:'CrowdStrike Holdings', shares:1.991, price:657.01, value:1308.11, cost:785.94, gain:522.17, gainPct:66.44, account:'Webull', type:'Stock'},
+  {ticker:'GOOGL', name:'Alphabet Inc', shares:6.491, price:382.29, value:2481.56, cost:1105.69, gain:1375.87, gainPct:124.44, account:'Webull', type:'Stock'},
+  {ticker:'HL', name:'Hecla Mining Co', shares:26.860, price:16.99, value:456.36, cost:895.13, gain:-438.77, gainPct:-49.02, account:'Webull', type:'Stock'},
+  {ticker:'IBP', name:'Installed Building Products', shares:2.968, price:213.11, value:632.56, cost:874.66, gain:-242.10, gainPct:-27.68, account:'Webull', type:'Stock'},
+  {ticker:'LHX', name:'L3Harris Technologies', shares:2.492, price:312.00, value:777.58, cost:880.12, gain:-102.54, gainPct:-11.65, account:'Webull', type:'Stock'},
+  {ticker:'MSFT', name:'Microsoft Corp', shares:1.642, price:417.79, value:685.89, cost:682.51, gain:3.38, gainPct:0.50, account:'Webull', type:'Stock'},
+  {ticker:'NVDA', name:'Nvidia Corporation', shares:5, price:214.30, value:1071.50, cost:625.62, gain:445.88, gainPct:71.27, account:'Webull', type:'Stock'},
+  {ticker:'PANW', name:'Palo Alto Networks', shares:7.962, price:260.07, value:2070.72, cost:1464.35, gain:606.37, gainPct:41.41, account:'Webull', type:'Stock'},
+  {ticker:'RGTI', name:'Rigetti Computing Inc', shares:3, price:25.86, value:77.58, cost:55.44, gain:22.14, gainPct:39.94, account:'Webull', type:'Stock'},
+  {ticker:'SCHO', name:'Schwab Short-Term US Treasury ETF', shares:41.588, price:24.15, value:1004.36, cost:1013.09, gain:-8.73, gainPct:-0.86, account:'Webull', type:'Bond'},
+  {ticker:'SPYM', name:'SPDR Portfolio S&P 500 ETF', shares:0.508, price:87.67, value:44.56, cost:35.56, gain:9.00, gainPct:25.30, account:'Webull', type:'ETF'},
+  {ticker:'TEM', name:'Tempus AI', shares:20.351, price:46.04, value:936.97, cost:1146.35, gain:-209.38, gainPct:-18.26, account:'Webull', type:'Stock'},
+  {ticker:'VST', name:'Vistra Corp', shares:8.253, price:156.00, value:1287.42, cost:1129.38, gain:158.04, gainPct:13.99, account:'Webull', type:'Stock'},
+  // 401ks
+  {ticker:'RFKTX', name:'American Funds 2050 Target Date R6', shares:1025.295, price:25.66, value:26309.07, cost:null, gain:null, gainPct:null, account:'401k (Old)', type:'Mutual'},
+  {ticker:'RFKTX', name:'American Funds 2050 Target Date', shares:900, price:25.66, value:22745, cost:null, gain:null, gainPct:null, account:'401k (Current)', type:'Mutual'},
+];
+
+// ── ETF COMPOSITIONS (top holdings & weights) ────────────────────────────────
+const ETF_WEIGHTS = {
+  'VTI': { 'AAPL':0.0332, 'NVDA':0.0620, 'MSFT':0.0558, 'AMZN':0.0370, 'GOOGL':0.0210, 'META':0.0205, 'TSLA':0.0180, 'AVGO':0.0160, 'BRK.B':0.0155, 'JPM':0.0130 },
+  'VXUS':{ 'NOVO B':0.0050, 'SHELL':0.0048, 'SAMSUNG':0.0045, 'NESTLE':0.0043, 'ASML':0.0082, 'LVMH':0.0040, 'TOYOTA':0.0038, 'TSMC':0.0125, 'ALIBABA':0.0035, 'TENCENT':0.0040 },
+  'VOO': { 'AAPL':0.0740, 'NVDA':0.0640, 'MSFT':0.0620, 'AMZN':0.0390, 'GOOGL':0.0220, 'META':0.0216, 'TSLA':0.0190, 'AVGO':0.0168, 'BRK.B':0.0163, 'JPM':0.0137 },
+  'VGT': { 'NVDA':0.1700, 'AAPL':0.1600, 'MSFT':0.1580, 'AVGO':0.0540, 'ORCL':0.0340, 'AMD':0.0220, 'ADBE':0.0200, 'CSCO':0.0195, 'QCOM':0.0188, 'AMAT':0.0180 },
+  'SPYM':{ 'AAPL':0.0740, 'NVDA':0.0640, 'MSFT':0.0620, 'AMZN':0.0390, 'GOOGL':0.0220, 'META':0.0216, 'TSLA':0.0190, 'AVGO':0.0168, 'BRK.B':0.0163, 'JPM':0.0137 },
+  'XLK': { 'AAPL':0.2120, 'NVDA':0.2030, 'MSFT':0.1950, 'AVGO':0.0520, 'ORCL':0.0310, 'AMD':0.0190, 'CSCO':0.0185, 'ADBE':0.0180, 'QCOM':0.0175, 'ACN':0.0160 },
+  'VEU': { 'TSMC':0.0142, 'NOVO B':0.0068, 'SAMSUNG':0.0058, 'NESTLE':0.0052, 'ASML':0.0092, 'LVMH':0.0048, 'ROCHE':0.0044, 'TENCENT':0.0058, 'ALIBABA':0.0040, 'SHELL':0.0062 },
+  'VXF': { 'SMCI':0.0120, 'DECK':0.0090, 'CRWD':0.0110, 'PANW':0.0095, 'WDAY':0.0088, 'MSTR':0.0085, 'CSGP':0.0082, 'GDDY':0.0078, 'DT':0.0075, 'ZSCALER':0.0072 },
+  'VB':  { 'SMCI':0.0140, 'DECK':0.0110, 'TXRH':0.0085, 'RGTI':0.0010, 'COOP':0.0075, 'EXP':0.0070, 'CRVL':0.0068, 'CNO':0.0065, 'RMBS':0.0062, 'SIGI':0.0058 },
+  'XLRE':{ 'PLD':0.0980, 'AMT':0.0830, 'EQIX':0.0810, 'WELL':0.0680, 'SPG':0.0590, 'DLR':0.0560, 'CCI':0.0540, 'PSA':0.0510, 'O':0.0490, 'VICI':0.0470 },
+  'VLXVX':{ 'AAPL':0.0250, 'NVDA':0.0210, 'MSFT':0.0208, 'AMZN':0.0160, 'GOOGL':0.0085, 'META':0.0083, 'TSLA':0.0075, 'AVGO':0.0065, 'BRK.B':0.0063, 'JPM':0.0055 },
+};
+
+// ── SECTOR WEIGHTS per ETF ───────────────────────────────────────────────────
+const SECTOR_WEIGHTS = {
+  'VTI':  {Technology:28.5, Healthcare:12.2, Financials:13.4, ConsumerDisc:10.8, Industrials:8.5, Energy:3.8, Utilities:2.8, Materials:2.4, RealEstate:3.2, CommServices:8.6, ConsumerStaples:5.8},
+  'VXUS': {Technology:14.2, Healthcare:9.8, Financials:22.4, ConsumerDisc:11.2, Industrials:12.8, Energy:5.4, Utilities:3.2, Materials:5.6, RealEstate:3.4, CommServices:7.2, ConsumerStaples:9.8},
+  'VOO':  {Technology:32.0, Healthcare:11.5, Financials:13.0, ConsumerDisc:10.5, Industrials:8.0, Energy:3.5, Utilities:2.5, Materials:2.2, RealEstate:2.8, CommServices:8.8, ConsumerStaples:5.2},
+  'VGT':  {Technology:99.5, Healthcare:0.3, Financials:0.2, ConsumerDisc:0, Industrials:0, Energy:0, Utilities:0, Materials:0, RealEstate:0, CommServices:0, ConsumerStaples:0},
+  'SPYM': {Technology:32.0, Healthcare:11.5, Financials:13.0, ConsumerDisc:10.5, Industrials:8.0, Energy:3.5, Utilities:2.5, Materials:2.2, RealEstate:2.8, CommServices:8.8, ConsumerStaples:5.2},
+  'XLK':  {Technology:98.0, Healthcare:0, Financials:2.0, ConsumerDisc:0, Industrials:0, Energy:0, Utilities:0, Materials:0, RealEstate:0, CommServices:0, ConsumerStaples:0},
+  'VEU':  {Technology:14.0, Healthcare:9.5, Financials:23.0, ConsumerDisc:11.0, Industrials:13.0, Energy:5.5, Utilities:3.5, Materials:6.0, RealEstate:3.5, CommServices:7.0, ConsumerStaples:10.0},
+  'VXF':  {Technology:20.0, Healthcare:11.0, Financials:9.5, ConsumerDisc:12.0, Industrials:14.5, Energy:4.2, Utilities:3.5, Materials:3.8, RealEstate:8.0, CommServices:6.5, ConsumerStaples:7.0},
+  'XLRE': {Technology:0, Healthcare:0, Financials:0, ConsumerDisc:0, Industrials:0, Energy:0, Utilities:0, Materials:0, RealEstate:100, CommServices:0, ConsumerStaples:0},
+  'VLXVX':{Technology:24.0, Healthcare:11.0, Financials:14.5, ConsumerDisc:10.0, Industrials:8.5, Energy:3.5, Utilities:4.0, Materials:3.5, RealEstate:5.0, CommServices:7.5, ConsumerStaples:8.5},
+};
+const STOCK_SECTORS = {
+  'AAPL':'Technology','AMD':'Technology','NVO':'Healthcare','RGTI':'Technology',
+  'AMZN':'ConsumerDisc','AVGO':'Technology','CDE':'Materials','CRWD':'Technology',
+  'GOOGL':'CommServices','HL':'Materials','IBP':'Industrials','LHX':'Industrials',
+  'MSFT':'Technology','NVDA':'Technology','PANW':'Technology','TEM':'Healthcare',
+  'VST':'Utilities','SCHO':'Bonds',
+};
+
+const SECTOR_COLORS = {
+  Technology:'#5080ff', Healthcare:'#40d0b0', Financials:'#f0c060',
+  ConsumerDisc:'#ff8040', Industrials:'#9060ff', Energy:'#ff5060',
+  Utilities:'#40d080', Materials:'#c080ff', RealEstate:'#60b0ff',
+  CommServices:'#ffb040', ConsumerStaples:'#80ff80', Bonds:'#808080',
+};
+
+// ── ETF OVERLAP ───────────────────────────────────────────────────────────────
+const OVERLAPS = [
+  {a:'VTI', b:'VOO', pct:82, desc:'VOO is essentially the large-cap slice of VTI'},
+  {a:'VTI', b:'SPYM', pct:85, desc:'SPYM tracks S&P 500 — heavily overlaps with VTI large caps'},
+  {a:'VTI', b:'XLK', pct:28, desc:'XLK is the tech portion of VTI concentrated'},
+  {a:'VOO', b:'SPYM', pct:97, desc:'Near-identical — both track S&P 500'},
+  {a:'VGT', b:'XLK', pct:72, desc:'Both tech ETFs — VGT slightly broader'},
+  {a:'VTI', b:'VGT', pct:25, desc:'VGT is the tech overweight version of VTI'},
+  {a:'VXUS', b:'VEU', pct:76, desc:'VEU is a large slice of VXUS'},
+  {a:'VTI', b:'VXF', pct:60, desc:'VXF is the mid/small cap extension of VTI'},
+  {a:'VLXVX', b:'VTI', pct:55, desc:'Target date fund holds broad market similar to VTI'},
+];
+
+// ── STOCK PRICES (for implied share calculation) ─────────────────────────────
+const STOCK_PRICES = {
+  'AAPL':308.82,'NVDA':214.30,'MSFT':417.79,'AMZN':265.40,'GOOGL':382.29,
+  'META':590.00,'TSLA':340.00,'AVGO':412.85,'BRK.B':515.00,'JPM':265.00,
+  'ORCL':195.00,'AMD':467.51,'ADBE':435.00,'CSCO':63.00,'QCOM':175.00,
+  'AMAT':210.00,'ACN':325.00,'PLD':115.00,'AMT':195.00,'EQIX':890.00,
+  'WELL':135.00,'SPG':170.00,'DLR':155.00,'CCI':105.00,'PSA':310.00,
+  'O':57.00,'VICI':32.00,'CRWD':657.01,'PANW':260.07,'WDAY':260.00,
+  'TSMC':185.00,'SMCI':40.00,'DECK':165.00,'NOVO B':88.00,'SAMSUNG':55.00,
+  'NESTLE':95.00,'ASML':750.00,'LVMH':620.00,'TOYOTA':185.00,
+  'ALIBABA':115.00,'TENCENT':50.00,'SHELL':65.00,'ROCHE':28.00,
+  'ZSCALER':200.00,'MSTR':380.00,'CSGP':85.00,'GDDY':185.00,'DT':60.00,
+  'TXRH':175.00,'COOP':95.00,'EXP':210.00,'CRVL':330.00,'CNO':35.00,
+  'RMBS':45.00,'SIGI':78.00,'RGTI':26.42,
+};
+
+// ── STOCK EXPOSURE CALCULATION ────────────────────────────────────────────────
+function calcExposure() {
+  const exposure = {};
+
+  HOLDINGS.forEach(h => {
+    if (h.type === 'Stock' || h.type === 'Bond') {
+      if (!exposure[h.ticker]) exposure[h.ticker] = { direct:0, etfValue:0, name:h.name, directShares:0, etfShares:0, price:h.price };
+      exposure[h.ticker].direct += h.value;
+      exposure[h.ticker].directShares += h.shares;
+      if (!exposure[h.ticker].price) exposure[h.ticker].price = h.price;
+    }
+    if (h.type === 'ETF' || h.type === 'Mutual') {
+      const weights = ETF_WEIGHTS[h.ticker];
+      if (weights) {
+        Object.entries(weights).forEach(([stock, w]) => {
+          if (!exposure[stock]) exposure[stock] = { direct:0, etfValue:0, name:stock, directShares:0, etfShares:0, price: STOCK_PRICES[stock]||null };
+          exposure[stock].etfValue += h.value * w;
+          // Calculate implied shares using known stock price
+          const price = STOCK_PRICES[stock] || exposure[stock].price;
+          if (price) exposure[stock].etfShares += (h.value * w) / price;
+        });
+      }
+    }
+  });
+
+  return Object.entries(exposure)
+    .map(([ticker, d]) => ({
+      ticker, ...d,
+      total: d.direct + d.etfValue,
+      totalShares: d.directShares + d.etfShares,
+    }))
+    .sort((a,b) => b.total - a.total)
+    .slice(0, 20);
+}
+
+// ── SECTOR CALCULATION ────────────────────────────────────────────────────────
+function calcSectors() {
+  const sectors = {};
+  HOLDINGS.forEach(h => {
+    const sw = SECTOR_WEIGHTS[h.ticker];
+    if (sw) {
+      Object.entries(sw).forEach(([sec, w]) => {
+        sectors[sec] = (sectors[sec]||0) + h.value * w/100;
+      });
+    }
+    const ss = STOCK_SECTORS[h.ticker];
+    if (ss && (h.type==='Stock')) {
+      sectors[ss] = (sectors[ss]||0) + h.value;
+    }
+  });
+  const total = Object.values(sectors).reduce((s,v)=>s+v,0);
+  return Object.entries(sectors)
+    .map(([name,val]) => ({ name, val, pct: val/total*100 }))
+    .filter(s => s.pct > 0.5)
+    .sort((a,b) => b.pct - a.pct);
+}
+
+// ── FORMAT ────────────────────────────────────────────────────────────────────
+function fmt(n, dec=0) {
+  if (n==null||isNaN(n)) return '—';
+  if (n<0) return '-$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+  return '$'+n.toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+function fmtN(n, dec=2) {
+  if (n==null||isNaN(n)) return '—';
+  return n.toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── RENDER HOLDINGS TABLE ────────────────────────────────────────────────────
+function renderHoldings(filter='', typeFilter='') {
+  const sorted = [...HOLDINGS]
+    .filter(h => {
+      const matchSearch = !filter || h.ticker.toLowerCase().includes(filter) || h.name.toLowerCase().includes(filter);
+      const matchType = !typeFilter || h.type === typeFilter;
+      return matchSearch && matchType;
+    })
+    .sort((a,b)=>b.value-a.value);
+
+  document.getElementById('holdingsTbody').innerHTML = sorted.map(h => {
+    const typeClass = {ETF:'type-etf',Stock:'type-stock',Mutual:'type-mutual',Bond:'type-bond'}[h.type]||'type-other';
+    const gainClass = h.gain == null ? '' : h.gain >= 0 ? 'pos-gain' : 'pos-loss';
+    const pct = (h.value/TOTAL*100).toFixed(2);
+    return `<tr>
+      <td><span class="ticker-badge">${h.ticker}</span><span style="color:var(--text2)">${h.name}</span></td>
+      <td style="color:var(--text3);font-size:0.72rem">${h.account}</td>
+      <td><span class="${typeClass}">${h.type}</span></td>
+      <td>${fmtN(h.shares)}</td>
+      <td>${fmt(h.price,2)}</td>
+      <td style="color:var(--text);font-weight:600">${fmt(h.value,2)}</td>
+      <td>${h.cost?fmt(h.cost,2):'—'}</td>
+      <td class="${gainClass}">${h.gain!=null?fmt(h.gain,2):'—'}</td>
+      <td class="${gainClass}">${h.gainPct!=null?(h.gainPct>=0?'+':'')+h.gainPct.toFixed(2)+'%':'—'}</td>
+      <td style="color:var(--text3)">${pct}%</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterHoldings() {
+  const search = document.getElementById('holdingsSearch').value.toLowerCase();
+  const type = document.getElementById('holdingsFilter').value;
+  renderHoldings(search, type);
+}
+
+// ── RENDER EXPOSURE ───────────────────────────────────────────────────────────
+function renderExposure() {
+  const exp = calcExposure();
+  const maxVal = exp[0]?.total || 1;
+
+  document.getElementById('exposureList').innerHTML = exp.map((e,i) => {
+    const directPct = maxVal > 0 ? e.direct/maxVal*100 : 0;
+    const etfPct = maxVal > 0 ? e.etfValue/maxVal*100 : 0;
+    const portPct = (e.total/TOTAL*100).toFixed(2);
+    const totalSharesStr = e.totalShares > 0 ? fmtN(e.totalShares, e.totalShares < 10 ? 3 : e.totalShares < 100 ? 2 : 1) : '—';
+    const directSharesStr = e.directShares > 0 ? fmtN(e.directShares, e.directShares < 10 ? 3 : 2) : '—';
+    const etfSharesStr = e.etfShares > 0 ? fmtN(e.etfShares, e.etfShares < 10 ? 3 : 2) : '—';
+    return `<div class="exposure-bar-row" style="padding:10px 0;border-bottom:1px solid var(--bg2)">
+      <span class="exp-rank">${i+1}</span>
+      <span class="exp-ticker">${e.ticker}</span>
+      <span class="exp-name">${e.name}</span>
+      <div class="exp-track">
+        <div style="height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal) ${directPct.toFixed(0)}%,var(--blue) ${directPct.toFixed(0)}% ${(directPct+etfPct).toFixed(0)}%,transparent ${(directPct+etfPct).toFixed(0)}%)"></div>
+      </div>
+      <span style="color:var(--teal);font-size:0.72rem;min-width:90px;text-align:right">${e.direct>0?fmt(e.direct,0):'—'}</span>
+      <span style="color:var(--teal);font-size:0.72rem;font-weight:600;min-width:80px;text-align:right">${directSharesStr}</span>
+      <span style="color:var(--blue);font-size:0.72rem;min-width:90px;text-align:right">${e.etfValue>0?fmt(e.etfValue,0):'—'}</span>
+      <span style="color:var(--blue);font-size:0.72rem;font-weight:600;min-width:90px;text-align:right">${etfSharesStr}</span>
+      <span style="color:var(--gold);font-size:0.78rem;font-weight:700;min-width:85px;text-align:right">${fmt(e.total,0)}</span>
+      <span style="color:var(--gold);font-size:0.82rem;font-weight:800;min-width:80px;text-align:right">${totalSharesStr}</span>
+      <span style="color:var(--text3);font-size:0.68rem;min-width:50px;text-align:right">${portPct}%</span>
+    </div>`;
+  }).join('');
+
+  // AAPL breakdown
+  const aaplDirect = HOLDINGS.filter(h=>h.ticker==='AAPL').map(h=>`
+    <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--bg3);border-radius:8px;margin-bottom:6px;font-size:0.78rem">
+      <span style="color:var(--text2)">${h.account}</span>
+      <span style="color:var(--teal)">${fmtN(h.shares)} direct shares</span>
+      <span style="color:var(--text)">${fmt(h.value,2)}</span>
+    </div>`).join('');
+
+  const aaplETF = HOLDINGS.filter(h=>ETF_WEIGHTS[h.ticker]?.['AAPL']).map(h=>`
+    <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--bg3);border-radius:8px;margin-bottom:6px;font-size:0.78rem">
+      <span style="color:var(--text2)">${h.ticker} (${h.account})</span>
+      <span style="color:var(--blue)">${(ETF_WEIGHTS[h.ticker]['AAPL']*100).toFixed(2)}% weight → ~${fmtN(h.value*ETF_WEIGHTS[h.ticker]['AAPL']/308.82,3)} implied shares</span>
+      <span style="color:var(--text)">${fmt(h.value*ETF_WEIGHTS[h.ticker]['AAPL'],2)}</span>
+    </div>`).join('');
+
+  const totalAaplDirect = HOLDINGS.filter(h=>h.ticker==='AAPL').reduce((s,h)=>s+h.shares,0);
+  const totalAaplETF = HOLDINGS.filter(h=>ETF_WEIGHTS[h.ticker]?.['AAPL']).reduce((s,h)=>s+h.value*ETF_WEIGHTS[h.ticker]['AAPL']/308.82,0);
+  const totalAaplVal = HOLDINGS.filter(h=>h.ticker==='AAPL').reduce((s,h)=>s+h.value,0) +
+                       HOLDINGS.filter(h=>ETF_WEIGHTS[h.ticker]?.['AAPL']).reduce((s,h)=>s+h.value*ETF_WEIGHTS[h.ticker]['AAPL'],0);
+
+  document.getElementById('aaplBreakdown').innerHTML = `
+    <div style="background:var(--bg3);border-radius:10px;padding:14px 16px;margin-bottom:14px;border:1px solid rgba(64,208,176,0.3)">
+      <div style="display:flex;gap:32px;flex-wrap:wrap">
+        <div><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Direct Shares</div><div style="font-family:'Instrument Serif',serif;font-size:1.6rem;color:var(--teal)">${fmtN(totalAaplDirect,3)}</div></div>
+        <div><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">ETF-Implied Shares</div><div style="font-family:'Instrument Serif',serif;font-size:1.6rem;color:var(--blue)">${fmtN(totalAaplETF,3)}</div></div>
+        <div><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Total Combined</div><div style="font-family:'Instrument Serif',serif;font-size:1.6rem;color:var(--gold)">${fmtN(totalAaplDirect+totalAaplETF,3)} shares</div></div>
+        <div><div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Total AAPL Value</div><div style="font-family:'Instrument Serif',serif;font-size:1.6rem;color:var(--text)">${fmt(totalAaplVal,0)}</div></div>
+      </div>
+    </div>
+    <div style="font-size:0.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Direct Holdings</div>
+    ${aaplDirect}
+    <div style="font-size:0.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin:12px 0 8px">ETF Exposure (implied)</div>
+    ${aaplETF}`;
+}
+
+// ── RENDER SECTORS ────────────────────────────────────────────────────────────
+function renderSectors() {
+  const sectors = calcSectors();
+  const maxPct = sectors[0]?.pct || 1;
+
+  document.getElementById('sectorList').innerHTML = sectors.map(s => `
+    <div class="sector-row">
+      <div class="sector-top">
+        <span class="sector-name">${s.name}</span>
+        <span class="sector-pct" style="color:${SECTOR_COLORS[s.name]||'var(--text2)'}">${s.pct.toFixed(1)}%</span>
+      </div>
+      <div class="sector-track">
+        <div class="sector-fill" style="width:${(s.pct/maxPct*100).toFixed(1)}%;background:${SECTOR_COLORS[s.name]||'var(--slate)'}"></div>
+      </div>
+    </div>`).join('');
+
+  // Sector chart
+  const existingChart = Chart.getChart('sectorChart');
+  if (existingChart) existingChart.destroy();
+  new Chart(document.getElementById('sectorChart'), {
+    type: 'doughnut',
+    data: {
+      labels: sectors.map(s=>s.name),
+      datasets:[{ data: sectors.map(s=>s.pct), backgroundColor: sectors.map(s=>SECTOR_COLORS[s.name]||'#708099'), borderColor:'#0c0f1a', borderWidth:2 }]
+    },
+    options:{ responsive:true, cutout:'55%', plugins:{ legend:{ position:'bottom', labels:{ color:'#8890b0', font:{size:10}, boxWidth:10 } }, tooltip:{ callbacks:{ label:c=>`${c.label}: ${c.raw.toFixed(1)}%` } } } }
+  });
+}
+
+// ── RENDER OVERLAP ────────────────────────────────────────────────────────────
+function renderOverlap() {
+  document.getElementById('overlapGrid').innerHTML = OVERLAPS.map(o => {
+    const cls = o.pct>=75?'high-overlap':o.pct>=40?'med-overlap':'low-overlap';
+    const barColor = o.pct>=75?'var(--red)':o.pct>=40?'var(--orange)':'var(--green)';
+    return `<div class="overlap-card">
+      <div class="overlap-pair">${o.a} ↔ ${o.b}</div>
+      <div class="overlap-pct-val ${cls}">${o.pct}%</div>
+      <div class="overlap-bar"><div class="overlap-fill" style="width:${o.pct}%;background:${barColor}"></div></div>
+      <div class="overlap-desc" style="margin-top:6px">${o.desc}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('riskFlags').innerHTML = [
+    { flag:'⚠️ VOO + SPYM are 97% overlapping', detail:'You hold both in different accounts. They\'re virtually identical — consider consolidating into one.', level:'high' },
+    { flag:'⚠️ High Tech Concentration', detail:'VGT (100% tech) + XLK (98% tech) + individual tech stocks puts ~45%+ of your portfolio in technology.', level:'high' },
+    { flag:'📊 VTI + VXF is intentional', detail:'This is the "total market" strategy (VTI = large/mid, VXF = extended mid/small). Good diversification.', level:'low' },
+    { flag:'📊 VXUS + VEU overlap', detail:'76% overlap. VEU is a developed-markets subset of VXUS. Consider whether you need both.', level:'med' },
+    { flag:'✅ Good international diversification', detail:'VXUS ($108K) provides broad international exposure — roughly 25% of portfolio. Well balanced.', level:'low' },
+  ].map(f => `<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:var(--bg3);border-radius:10px;margin-bottom:8px;border-left:3px solid ${f.level==='high'?'var(--red)':f.level==='med'?'var(--orange)':'var(--green)'}">
+    <div>
+      <div style="font-size:0.8rem;font-weight:600;color:var(--text);margin-bottom:3px">${f.flag}</div>
+      <div style="font-size:0.72rem;color:var(--text3)">${f.detail}</div>
+    </div>
+  </div>`).join('');
+}
+
+// ── RENDER P&L ────────────────────────────────────────────────────────────────
+function renderPnL() {
+  const sorted = [...HOLDINGS].filter(h=>h.gain!=null).sort((a,b)=>b.gain-a.gain);
+  document.getElementById('pnlTbody').innerHTML = sorted.map(h => {
+    const cls = h.gain >= 0 ? 'pos-gain' : 'pos-loss';
+    const badge = h.gain >= 0
+      ? `<span style="background:rgba(64,208,128,0.15);color:var(--green);padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:700">GAIN</span>`
+      : `<span style="background:rgba(255,80,96,0.15);color:var(--red);padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:700">LOSS</span>`;
+    return `<tr>
+      <td><span class="ticker-badge">${h.ticker}</span></td>
+      <td style="color:var(--text2)">${h.name}</td>
+      <td style="color:var(--text3);font-size:0.72rem">${h.account}</td>
+      <td>${fmt(h.value,2)}</td>
+      <td class="${cls}">${fmt(h.gain,2)}</td>
+      <td class="${cls}">${h.gainPct>=0?'+':''}${h.gainPct.toFixed(2)}%</td>
+      <td>${badge}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── RENDER CHARTS ─────────────────────────────────────────────────────────────
+function renderCharts() {
+  // Alloc chart
+  new Chart(document.getElementById('allocChart'), {
+    type:'doughnut',
+    data:{
+      labels:['Taxable Brokerage','Roth IRA','401k (Pre-Tax)'],
+      datasets:[{ data:[354852,37746,49054], backgroundColor:['#40d0b0','#9060ff','#40d080'], borderColor:'#0c0f1a', borderWidth:3 }]
+    },
+    options:{ responsive:true, cutout:'60%', plugins:{ legend:{ position:'bottom', labels:{ color:'#8890b0', font:{size:11}, boxWidth:12 } }, tooltip:{ callbacks:{ label:c=>`${c.label}: $${c.raw.toLocaleString()}` } } } }
+  });
+
+  // Composition
+  const etfVal = HOLDINGS.filter(h=>h.type==='ETF').reduce((s,h)=>s+h.value,0);
+  const stockVal = HOLDINGS.filter(h=>h.type==='Stock').reduce((s,h)=>s+h.value,0);
+  const mutualVal = HOLDINGS.filter(h=>h.type==='Mutual').reduce((s,h)=>s+h.value,0);
+  const bondVal = HOLDINGS.filter(h=>h.type==='Bond').reduce((s,h)=>s+h.value,0);
+  new Chart(document.getElementById('compChart'), {
+    type:'doughnut',
+    data:{
+      labels:['ETFs','Individual Stocks','Mutual Funds','Bonds/Treasury'],
+      datasets:[{ data:[etfVal,stockVal,mutualVal,bondVal], backgroundColor:['#40d0b0','#5080ff','#9060ff','#808090'], borderColor:'#0c0f1a', borderWidth:3 }]
+    },
+    options:{ responsive:true, cutout:'60%', plugins:{ legend:{ position:'bottom', labels:{ color:'#8890b0', font:{size:11}, boxWidth:12 } }, tooltip:{ callbacks:{ label:c=>`${c.label}: $${Math.round(c.raw).toLocaleString()} (${(c.raw/TOTAL*100).toFixed(1)}%)` } } } }
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+// Wrap in DOMContentLoaded so all HTML elements exist before we render into them
+window.addEventListener('DOMContentLoaded', function() {
+  renderHoldings();
+  renderCharts();
+  renderExposure();
+  renderSectors();
+  renderOverlap();
+  renderPnL();
+
+
+// ════════════════════════════════════════════════════
+// FEATURE 1: HEALTH SCORE
+// ════════════════════════════════════════════════════
+function renderHealthScore() {
+  const factors = [
+    {
+      name: 'Diversification',
+      score: 72,
+      max: 100,
+      color: 'var(--teal)',
+      note: 'Good ETF diversification. Single stocks add concentration risk.',
+    },
+    {
+      name: 'Overlap & Redundancy',
+      score: 55,
+      max: 100,
+      color: 'var(--orange)',
+      note: 'VOO + SPYM are 97% overlapping. Consolidate to improve.',
+    },
+    {
+      name: 'Sector Balance',
+      score: 58,
+      max: 100,
+      color: 'var(--orange)',
+      note: '~45% in Tech. High concentration — consider trimming VGT/XLK.',
+    },
+    {
+      name: 'Tax Efficiency',
+      score: 82,
+      max: 100,
+      color: 'var(--green)',
+      note: 'Roth IRA + 401k cover 20% of portfolio. Solid tax shelter.',
+    },
+    {
+      name: 'International Exposure',
+      score: 88,
+      max: 100,
+      color: 'var(--green)',
+      note: 'VXUS + VEU give strong intl coverage at ~26% of portfolio.',
+    },
+    {
+      name: 'Cost Basis & Returns',
+      score: 95,
+      max: 100,
+      color: 'var(--green)',
+      note: '+42.3% overall return. VTI up 62%, RGTI up 234%. Excellent.',
+    },
+  ];
+
+  const totalScore = Math.round(factors.reduce((s,f)=>s+f.score,0)/factors.length);
+  const grade = totalScore>=90?'A+':totalScore>=85?'A':totalScore>=80?'A-':totalScore>=75?'B+':totalScore>=70?'B':totalScore>=65?'B-':totalScore>=60?'C+':'C';
+  const gradeColor = totalScore>=80?'var(--green)':totalScore>=65?'var(--gold)':'var(--red)';
+  const circ = 2*Math.PI*66;
+  const offset = circ*(1-totalScore/100);
+
+  document.getElementById('scoreCircle').style.stroke = gradeColor;
+  document.getElementById('scoreCircle').style.strokeDashoffset = offset;
+  document.getElementById('scoreLetter').textContent = grade;
+  document.getElementById('scoreLetter').style.color = gradeColor;
+  document.getElementById('scoreNum').textContent = `${totalScore}/100`;
+
+  document.getElementById('healthFactors').innerHTML = factors.map(f=>`
+    <div class="health-factor">
+      <span class="hf-label">${f.name}</span>
+      <div class="hf-bar"><div class="hf-fill" style="width:${f.score}%;background:${f.color}"></div></div>
+      <span class="hf-score" style="color:${f.color}">${f.score}</span>
+      <span class="hf-note">${f.note}</span>
+    </div>`).join('');
+
+  document.getElementById('healthRecs').innerHTML = [
+    { priority:'🔴 High', action:'Consolidate VOO + SPYM', detail:'Both track S&P 500 at 97% overlap. Sell one, buy into VTI or keep proceeds in cash.', impact:'+6 pts' },
+    { priority:'🔴 High', action:'Reduce Tech Concentration', detail:'VGT + XLK + tech stocks = ~45% exposure. Consider trimming $10-15K from VGT.', impact:'+8 pts' },
+    { priority:'🟡 Medium', action:'Add Bonds / Fixed Income', detail:'Only SCHO ($1K) in bonds. At age 32, a 5-10% bond allocation adds stability.', impact:'+5 pts' },
+    { priority:'🟡 Medium', action:'Max Roth IRA Contributions', detail:'$7K annual limit. More Roth = better long-term tax efficiency.', impact:'+4 pts' },
+    { priority:'🟢 Low', action:'Review NVO & HL positions', detail:'Both down 49-65%. Consider tax-loss harvesting or doubling down with conviction.', impact:'+2 pts' },
+  ].map(r=>`
+    <div style="padding:12px 14px;background:var(--bg3);border-radius:10px;margin-bottom:8px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:0.72rem;font-weight:700;color:var(--text)">${r.priority} — ${r.action}</span>
+        <span style="font-size:0.68rem;font-weight:700;color:var(--green);background:rgba(64,208,128,0.12);padding:2px 8px;border-radius:4px">${r.impact}</span>
+      </div>
+      <div style="font-size:0.7rem;color:var(--text3)">${r.detail}</div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════════════════
+// FEATURE 2: REBALANCE
+// ════════════════════════════════════════════════════
+function renderRebalance() {
+  // Current allocation
+  const usDomesticVal = HOLDINGS.filter(h=>['VTI','VOO','SPYM','XLK','VGT','VXF','VB','XLRE'].includes(h.ticker)).reduce((s,h)=>s+h.value,0)
+    + HOLDINGS.filter(h=>h.type==='Stock'&&!['NVO'].includes(h.ticker)).reduce((s,h)=>s+h.value,0);
+  const intlVal = HOLDINGS.filter(h=>['VXUS','VEU'].includes(h.ticker)).reduce((s,h)=>s+h.value,0);
+  const bondsVal = HOLDINGS.filter(h=>h.type==='Bond').reduce((s,h)=>s+h.value,0)
+    + HOLDINGS.filter(h=>['SLV'].includes(h.ticker)).reduce((s,h)=>s+h.value,0);
+  const stocksVal = HOLDINGS.filter(h=>h.type==='Stock').reduce((s,h)=>s+h.value,0);
+  const otherVal = HOLDINGS.filter(h=>h.type==='Mutual').reduce((s,h)=>s+h.value,0);
+
+  const targets = [
+    { name:'US Broad Market ETFs', current:usDomesticVal/TOTAL, target:0.50, color:'var(--teal)', currentVal:usDomesticVal },
+    { name:'International ETFs',   current:intlVal/TOTAL,       target:0.30, color:'var(--blue)', currentVal:intlVal },
+    { name:'Individual Stocks',    current:stocksVal/TOTAL,     target:0.10, color:'var(--gold)', currentVal:stocksVal },
+    { name:'Bonds & Alternatives', current:bondsVal/TOTAL,      target:0.05, color:'var(--purple)', currentVal:bondsVal },
+    { name:'Target Date / Other',  current:otherVal/TOTAL,      target:0.05, color:'var(--green)', currentVal:otherVal },
+  ];
+
+  document.getElementById('rebalanceList').innerHTML = targets.map(t=>{
+    const diff = (t.target - t.current) * TOTAL;
+    const action = Math.abs(diff)<500?'hold':diff>0?'buy':'sell';
+    const cls = action==='buy'?'reb-buy':action==='sell'?'reb-sell':'reb-hold';
+    const actionLabel = action==='buy'?'BUY':action==='sell'?'SELL':'HOLD';
+    const diffColor = action==='buy'?'var(--green)':action==='sell'?'var(--red)':'var(--gold)';
+    return `<div class="reb-row" style="border-left-color:${t.color}">
+      <span class="reb-action ${cls}">${actionLabel}</span>
+      <span style="font-size:0.8rem;font-weight:700;color:${t.color};min-width:180px">${t.name}</span>
+      <div class="reb-detail">
+        Current: <strong style="color:var(--text)">${(t.current*100).toFixed(1)}%</strong>
+        &nbsp;→&nbsp; Target: <strong style="color:var(--text)">${(t.target*100).toFixed(0)}%</strong>
+        &nbsp;·&nbsp; Gap: <strong style="color:var(--text)">${(Math.abs(t.current-t.target)*100).toFixed(1)}%</strong>
+      </div>
+      <span class="reb-amount" style="color:${diffColor}">${action==='hold'?'✓ On target':(diff>0?'+':'')+fmt(Math.round(diff),0)}</span>
+    </div>`;
+  }).join('');
+
+  // Rebalance chart
+  const existingChart = Chart.getChart('rebalChart');
+  if (existingChart) existingChart.destroy();
+  new Chart(document.getElementById('rebalChart'), {
+    type:'bar',
+    data:{
+      labels: targets.map(t=>t.name),
+      datasets:[
+        { label:'Current %', data:targets.map(t=>+(t.current*100).toFixed(1)), backgroundColor:'rgba(64,208,176,0.5)', borderColor:'var(--teal)', borderWidth:2, borderRadius:4 },
+        { label:'Target %',  data:targets.map(t=>t.target*100), backgroundColor:'rgba(240,192,96,0.3)', borderColor:'var(--gold)', borderWidth:2, borderRadius:4, borderDash:[4,4] },
+      ]
+    },
+    options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#8890b0', font:{size:11} } }, tooltip:{ callbacks:{ label:c=>`${c.dataset.label}: ${c.raw}%` } } },
+      scales:{ x:{ticks:{color:'#8890b0',font:{size:10}},grid:{color:'rgba(255,255,255,0.06)'}}, y:{ticks:{color:'#8890b0',callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.06)'}} } }
+  });
+}
+
+// ════════════════════════════════════════════════════
+// FEATURE 3: DIVIDENDS
+// ════════════════════════════════════════════════════
+const DIVIDEND_YIELDS = {
+  'VTI':0.0138,'VXUS':0.0310,'VEU':0.0320,'VOO':0.0132,'VXF':0.0108,'VB':0.0118,
+  'SPYM':0.0132,'XLK':0.0065,'SLV':0.00,'XLRE':0.0310,'VGT':0.0062,'VLXVX':0.0150,
+  'AAPL':0.0045,'AMD':0.00,'NVO':0.0110,'RGTI':0.00,'AMZN':0.00,'AVGO':0.0125,
+  'CDE':0.00,'CRWD':0.00,'GOOGL':0.00,'HL':0.00,'IBP':0.0052,'LHX':0.0200,
+  'MSFT':0.0072,'NVDA':0.0035,'PANW':0.00,'TEM':0.00,'VST':0.0088,
+  'SCHO':0.0420,'RFKTX':0.0100,
+};
+
+function renderDividends() {
+  const divHoldings = HOLDINGS.map(h=>({
+    ...h,
+    yield: DIVIDEND_YIELDS[h.ticker]||0,
+    annualIncome: h.value*(DIVIDEND_YIELDS[h.ticker]||0),
+  })).filter(h=>h.annualIncome>0).sort((a,b)=>b.annualIncome-a.annualIncome);
+
+  const totalAnnual = divHoldings.reduce((s,h)=>s+h.annualIncome,0);
+  const totalMonthly = totalAnnual/12;
+  const portfolioYield = (totalAnnual/TOTAL*100).toFixed(2);
+  const divPayers = divHoldings.length;
+
+  document.getElementById('divStats').innerHTML = [
+    { label:'Est. Annual Income', val:fmt(totalAnnual,2), color:'var(--green)' },
+    { label:'Est. Monthly Income', val:fmt(totalMonthly,2), color:'var(--teal)' },
+    { label:'Portfolio Yield', val:portfolioYield+'%', color:'var(--gold)' },
+    { label:'Dividend Payers', val:divPayers+' positions', color:'var(--blue)' },
+    { label:'Largest Dividend Source', val:divHoldings[0]?.ticker||'—', color:'var(--purple)' },
+    { label:'Div Reinvested (DRIP)', val:'SPYM ✓', color:'var(--text2)' },
+  ].map(s=>`<div class="div-stat"><div class="div-val" style="color:${s.color}">${s.val}</div><div class="div-label">${s.label}</div></div>`).join('');
+
+  document.getElementById('divTable').innerHTML = divHoldings.map(h=>`
+    <tr>
+      <td><span class="ticker-badge">${h.ticker}</span></td>
+      <td style="color:var(--text2)">${h.name}</td>
+      <td style="color:var(--text3);font-size:0.72rem">${h.account}</td>
+      <td>${fmtN(h.shares)}</td>
+      <td style="color:var(--gold)">${(h.yield*100).toFixed(2)}%</td>
+      <td>${fmt(h.value*h.yield/h.shares,2)}/sh</td>
+      <td class="pos-gain">${fmt(h.annualIncome,2)}</td>
+      <td style="color:var(--teal)">${fmt(h.annualIncome/12,2)}</td>
+    </tr>`).join('');
+}
+
+// ════════════════════════════════════════════════════
+// FEATURE 4: WHAT-IF SIMULATOR
+// ════════════════════════════════════════════════════
+// ETF correlations — if a stock moves, how much do related ETFs move?
+const ETF_CORRELATIONS = {
+  'NVDA': { 'VTI':0.062,'VOO':0.064,'SPYM':0.064,'VGT':0.170,'XLK':0.203,'VLXVX':0.021 },
+  'AAPL': { 'VTI':0.0332,'VOO':0.074,'SPYM':0.074,'VGT':0.160,'XLK':0.212,'VLXVX':0.025 },
+  'MSFT': { 'VTI':0.0558,'VOO':0.062,'SPYM':0.062,'VGT':0.158,'XLK':0.195,'VLXVX':0.021 },
+  'AMZN': { 'VTI':0.037,'VOO':0.039,'SPYM':0.039,'VGT':0.00,'XLK':0.00,'VLXVX':0.016 },
+  'GOOGL': { 'VTI':0.021,'VOO':0.022,'SPYM':0.022,'VGT':0.00,'XLK':0.00,'VLXVX':0.009 },
+  'AVGO': { 'VTI':0.016,'VOO':0.017,'SPYM':0.017,'VGT':0.054,'XLK':0.052,'VLXVX':0.007 },
+};
+
+function runWhatIf() {
+  const ticker = document.getElementById('wiTicker').value;
+  const pctChange = +document.getElementById('wiSlider').value / 100;
+  const pctDisplay = pctChange >= 0 ? `+${(pctChange*100).toFixed(0)}%` : `${(pctChange*100).toFixed(0)}%`;
+
+  document.getElementById('wiSliderVal').textContent = `Simulating ${pctDisplay} move in ${ticker}`;
+
+  let impacted = [];
+  let totalImpact = 0;
+
+  if (ticker === 'ALL_MARKET') {
+    impacted = HOLDINGS.map(h => ({ ticker:h.ticker, name:h.name, account:h.account, impact:h.value*pctChange, value:h.value, effectivePct:pctChange }));
+    totalImpact = TOTAL * pctChange;
+  } else if (ticker === 'ALL_TECH') {
+    const techTickers = ['VGT','XLK','NVDA','AAPL','MSFT','AMD','CRWD','PANW','GOOGL','AVGO','TEM','RGTI'];
+    impacted = HOLDINGS.filter(h=>techTickers.includes(h.ticker)).map(h=>({ ticker:h.ticker, name:h.name, account:h.account, impact:h.value*pctChange, value:h.value, effectivePct:pctChange }));
+    totalImpact = impacted.reduce((s,h)=>s+h.impact,0);
+  } else if (ticker === 'ALL_BULL') {
+    impacted = HOLDINGS.map(h => ({ ticker:h.ticker, name:h.name, account:h.account, impact:h.value*pctChange, value:h.value, effectivePct:pctChange }));
+    totalImpact = TOTAL * pctChange;
+  } else {
+    // Direct position impact
+    HOLDINGS.filter(h=>h.ticker===ticker).forEach(h=>{
+      const impact = h.value * pctChange;
+      impacted.push({ ticker:h.ticker, name:h.name, account:h.account, impact, value:h.value, effectivePct:pctChange, type:'direct' });
+      totalImpact += impact;
+    });
+    // ETF implied impact
+    const correls = ETF_CORRELATIONS[ticker] || {};
+    HOLDINGS.filter(h=>correls[h.ticker]).forEach(h=>{
+      const weight = correls[h.ticker];
+      const impact = h.value * weight * pctChange;
+      impacted.push({ ticker:h.ticker, name:h.name, account:h.account, impact, value:h.value, effectivePct:weight*pctChange, type:'etf', weight });
+      totalImpact += impact;
+    });
+  }
+
+  impacted.sort((a,b)=>Math.abs(b.impact)-Math.abs(a.impact));
+  const newTotal = TOTAL + totalImpact;
+  const impactColor = totalImpact >= 0 ? 'var(--green)' : 'var(--red)';
+
+  document.getElementById('wiResults').innerHTML = [
+    { label:'Current Portfolio', val:fmt(TOTAL,0), color:'var(--text)' },
+    { label:'After Scenario', val:fmt(newTotal,0), color:impactColor },
+    { label:'Dollar Impact', val:(totalImpact>=0?'+':'')+fmt(totalImpact,0), color:impactColor },
+    { label:'% Impact on Portfolio', val:(totalImpact/TOTAL*100>=0?'+':'')+(totalImpact/TOTAL*100).toFixed(2)+'%', color:impactColor },
+  ].map(c=>`<div class="wi-result-card">
+    <div class="wi-result-val" style="color:${c.color}">${c.val}</div>
+    <div class="wi-result-label">${c.label}</div>
+  </div>`).join('');
+
+  document.getElementById('wiBreakdown').innerHTML = impacted.slice(0,12).map(h=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border-radius:8px;margin-bottom:6px">
+      <span class="ticker-badge">${h.ticker}</span>
+      ${h.type==='etf'?`<span style="font-size:0.65rem;background:rgba(80,128,255,0.15);color:var(--blue);padding:2px 6px;border-radius:4px">ETF (${(h.weight*100).toFixed(1)}% wt)</span>`:'<span style="font-size:0.65rem;background:rgba(64,208,176,0.15);color:var(--teal);padding:2px 6px;border-radius:4px">DIRECT</span>'}
+      <span style="font-size:0.72rem;color:var(--text2);flex:1">${h.account}</span>
+      <span style="font-size:0.72rem;color:var(--text3)">${fmt(h.value,0)} position</span>
+      <span style="font-size:0.8rem;font-weight:700;min-width:90px;text-align:right;color:${h.impact>=0?'var(--green)':'var(--red)'}">${h.impact>=0?'+':''}${fmt(h.impact,0)}</span>
+      <span style="font-size:0.72rem;color:var(--text3);min-width:55px;text-align:right">${(h.effectivePct*100>=0?'+':'')+(h.effectivePct*100).toFixed(1)}%</span>
+    </div>`).join('') || '<div style="color:var(--text3);padding:16px">No direct exposure found for this ticker.</div>';
+}
+
+// ════════════════════════════════════════════════════
+// FEATURE 5: TAX LOTS
+// ════════════════════════════════════════════════════
+// Estimated hold times based on account + typical purchase patterns
+const HOLD_ESTIMATES = {
+  'VTI':'2+ years','VXUS':'2+ years','VEU':'2+ years','VOO':'1-2 years','VXF':'1-2 years',
+  'VB':'1-2 years','SPYM':'1-2 years','XLK':'1-2 years','SLV':'1-2 years','XLRE':'1-2 years',
+  'VGT':'1-2 years','VLXVX':'2+ years','AAPL':'1-2 years','AMD':'<1 year','NVO':'<1 year',
+  'RGTI':'<1 year','AMZN':'<1 year','AVGO':'1-2 years','CDE':'<1 year','CRWD':'<1 year',
+  'GOOGL':'<1 year','HL':'<1 year','IBP':'<1 year','LHX':'<1 year','MSFT':'<1 year',
+  'NVDA':'1-2 years','PANW':'<1 year','TEM':'<1 year','VST':'<1 year','SCHO':'<1 year',
+  'RFKTX':'2+ years',
+};
+
+function renderTaxLots() {
+  const withGain = HOLDINGS.filter(h=>h.gain!=null);
+  const ltGain = withGain.filter(h=>h.gain>0&&HOLD_ESTIMATES[h.ticker]==='2+ years').reduce((s,h)=>s+h.gain,0);
+  const stGain = withGain.filter(h=>h.gain>0&&HOLD_ESTIMATES[h.ticker]!=='2+ years').reduce((s,h)=>s+h.gain,0);
+  const ltLoss = withGain.filter(h=>h.gain<0&&HOLD_ESTIMATES[h.ticker]==='2+ years').reduce((s,h)=>s+h.gain,0);
+  const stLoss = withGain.filter(h=>h.gain<0&&HOLD_ESTIMATES[h.ticker]!=='2+ years').reduce((s,h)=>s+h.gain,0);
+
+  // Rough tax estimates (LT = 15%, ST = 32% marginal)
+  const ltTaxOwed = ltGain * 0.15;
+  const stTaxOwed = stGain * 0.32;
+
+  document.getElementById('taxStats').innerHTML = [
+    { label:'LT Gains (taxable accts)', val:fmt(ltGain,0), sub:'Est. 15% rate', color:'var(--green)' },
+    { label:'ST Gains (taxable accts)', val:fmt(stGain,0), sub:'Est. 32% rate', color:'var(--orange)' },
+    { label:'LT Losses', val:fmt(ltLoss,0), sub:'Can offset LT gains', color:'var(--teal)' },
+    { label:'ST Losses', val:fmt(stLoss,0), sub:'Can offset ST gains', color:'var(--red)' },
+    { label:'Est. LT Tax Liability', val:fmt(ltTaxOwed,0), sub:'If you sold everything LT', color:'var(--text2)' },
+    { label:'Est. ST Tax Liability', val:fmt(stTaxOwed,0), sub:'If you sold everything ST', color:'var(--text2)' },
+    { label:'Tax-Sheltered Gains', val:fmt(8774+9063,0), sub:'Roth + 401k (not taxed now)', color:'var(--purple)' },
+    { label:'Net Harvestable Loss', val:fmt(Math.abs(ltLoss+stLoss),0), sub:'Available to offset gains', color:'var(--blue)' },
+  ].map(s=>`<div style="background:var(--bg3);border-radius:10px;padding:14px;border:1px solid var(--border);text-align:center">
+    <div style="font-family:'Instrument Serif',serif;font-size:1.3rem;color:${s.color};margin-bottom:2px">${s.val}</div>
+    <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px">${s.label}</div>
+    <div style="font-size:0.63rem;color:var(--text3)">${s.sub}</div>
+  </div>`).join('');
+
+  document.getElementById('taxTable').innerHTML = withGain.sort((a,b)=>b.gain-a.gain).map(h=>{
+    const hold = HOLD_ESTIMATES[h.ticker]||'Unknown';
+    const isLT = hold==='2+ years';
+    const isTaxable = !['Vanguard Roth IRA','401k (Old)','401k (Current)'].includes(h.account);
+    const taxTreatment = !isTaxable ? 'Tax-Sheltered' : isLT ? 'Long-Term' : 'Short-Term';
+    const taxClass = !isTaxable?'unknown':isLT?(h.gain>=0?'lt-gain':'lt-loss'):(h.gain>=0?'st-gain':'st-loss');
+    const taxRate = !isTaxable?0:isLT?0.15:0.32;
+    const estTax = h.gain>0&&isTaxable ? h.gain*taxRate : 0;
+    const gainClass = h.gain>=0?'pos-gain':'pos-loss';
+    return `<tr>
+      <td><span class="ticker-badge">${h.ticker}</span></td>
+      <td style="color:var(--text3);font-size:0.72rem">${h.account}</td>
+      <td>${fmtN(h.shares)}</td>
+      <td>${fmt(h.cost,0)}</td>
+      <td>${fmt(h.value,0)}</td>
+      <td class="${gainClass}">${fmt(h.gain,0)} (${h.gainPct>=0?'+':''}${h.gainPct.toFixed(1)}%)</td>
+      <td style="color:var(--text3)">${hold}</td>
+      <td><span class="tax-badge ${taxClass}">${taxTreatment}</span></td>
+      <td style="color:${estTax>0?'var(--orange)':'var(--text3)'}">${estTax>0?fmt(estTax,0):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // TLH opportunities
+  const losers = HOLDINGS.filter(h=>h.gain!=null&&h.gain<0&&!['Vanguard Roth IRA','401k (Old)','401k (Current)'].includes(h.account))
+    .sort((a,b)=>a.gain-b.gain);
+  document.getElementById('tlhList').innerHTML = losers.length ? losers.map(h=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg3);border-radius:10px;margin-bottom:8px;border-left:3px solid var(--red)">
+      <span class="ticker-badge">${h.ticker}</span>
+      <span style="font-size:0.78rem;color:var(--text2);flex:1">${h.name} — ${h.account}</span>
+      <span style="color:var(--text3);font-size:0.72rem">${fmtN(h.shares)} shares</span>
+      <span style="color:var(--red);font-weight:700">${fmt(h.gain,0)}</span>
+      <span style="font-size:0.68rem;background:rgba(64,208,128,0.12);color:var(--green);padding:3px 10px;border-radius:6px">Harvest to offset gains</span>
+    </div>`).join('')
+  : '<div style="color:var(--text3);padding:16px">No taxable losses available to harvest.</div>';
+}
+
+// ════════════════════════════════════════════════════
+// FEATURE 6: BENCHMARK
+// ════════════════════════════════════════════════════
+// YTD returns for benchmarks (approximate as of May 2026)
+const BENCHMARKS = {
+  'S&P 500 (VOO)':    { ytd:12.4, since2024:28.5, color:'var(--blue)' },
+  'Total Market (VTI)':{ ytd:11.8, since2024:27.2, color:'var(--teal)' },
+  'Nasdaq 100':       { ytd:16.2, since2024:35.1, color:'var(--purple)' },
+  'Your Portfolio':   { ytd:8.38,  since2024:42.3, color:'var(--gold)' },
+};
+
+// Individual stock returns vs VTI benchmark (+27.2% since ~2024)
+const VTI_BENCHMARK = 27.2;
+
+function renderBenchmark() {
+  const portYTD = 8.38, portSince2024 = 42.3;
+
+  document.getElementById('benchStats').innerHTML = Object.entries(BENCHMARKS).map(([name,b])=>{
+    const vsYTD = portYTD - b.ytd;
+    const vsSince = portSince2024 - b.since2024;
+    const isPortfolio = name === 'Your Portfolio';
+    return `<div class="bench-card">
+      <div class="bench-val" style="color:${b.color}">${b.since2024>=0?'+':''}${b.since2024}%</div>
+      <div class="bench-label">${name}</div>
+      <div style="font-size:0.65rem;color:var(--text3);margin-top:2px">YTD: ${b.ytd>=0?'+':''}${b.ytd}%</div>
+      ${!isPortfolio?`<div class="bench-vs ${vsSince>=0?'bench-win':'bench-lose'}">${vsSince>=0?'You beat by':'You trail by'} ${Math.abs(vsSince).toFixed(1)}%</div>`:'<div class="bench-vs" style="color:var(--gold)">← Your portfolio</div>'}
+    </div>`;
+  }).join('');
+
+  // Benchmark chart
+  const existingChart = Chart.getChart('benchChart');
+  if (existingChart) existingChart.destroy();
+  const labels = Object.keys(BENCHMARKS);
+  const ytdData = Object.values(BENCHMARKS).map(b=>b.ytd);
+  const since2024Data = Object.values(BENCHMARKS).map(b=>b.since2024);
+  const colors = Object.values(BENCHMARKS).map(b=>b.color);
+  new Chart(document.getElementById('benchChart'),{
+    type:'bar',
+    data:{ labels, datasets:[
+      { label:'YTD 2026',      data:ytdData,      backgroundColor:colors.map(c=>c.replace(')',',0.3)').replace('var(','rgba(').replace('--blue','80,128,255').replace('--teal','64,208,176').replace('--purple','144,96,255').replace('--gold','240,192,96')), borderColor:colors.map((_,i)=>['#5080ff','#40d0b0','#9060ff','#f0c060'][i]), borderWidth:2, borderRadius:4 },
+      { label:'Since 2024',    data:since2024Data, backgroundColor:colors.map(c=>c.replace(')',',0.15)').replace('var(','rgba(').replace('--blue','80,128,255').replace('--teal','64,208,176').replace('--purple','144,96,255').replace('--gold','240,192,96')), borderColor:colors.map((_,i)=>['#5080ff','#40d0b0','#9060ff','#f0c060'][i]), borderWidth:2, borderRadius:4, borderDash:[4,4] },
+    ]},
+    options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#8890b0',font:{size:11} } }, tooltip:{ callbacks:{ label:c=>`${c.dataset.label}: ${c.raw>=0?'+':''}${c.raw}%` } } },
+      scales:{ x:{ticks:{color:'#8890b0'},grid:{color:'rgba(255,255,255,0.06)'}}, y:{ticks:{color:'#8890b0',callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.06)'}} } }
+  });
+
+  // Stock vs index
+  const stocks = HOLDINGS.filter(h=>h.type==='Stock'&&h.gainPct!=null).sort((a,b)=>b.gainPct-a.gainPct);
+  document.getElementById('stockVsIndex').innerHTML = `
+    <div style="font-size:0.7rem;color:var(--text3);margin-bottom:12px">VTI benchmark return since ~2024: <strong style="color:var(--teal)">+${VTI_BENCHMARK}%</strong></div>
+    ${stocks.map(h=>{
+      const vsIndex = h.gainPct - VTI_BENCHMARK;
+      const beats = vsIndex >= 0;
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg3);border-radius:8px;margin-bottom:6px">
+        <span class="ticker-badge">${h.ticker}</span>
+        <span style="font-size:0.78rem;color:var(--text2);flex:1">${h.name}</span>
+        <span style="font-size:0.78rem;font-weight:700;color:${h.gainPct>=0?'var(--green)':'var(--red)'};min-width:70px;text-align:right">${h.gainPct>=0?'+':''}${h.gainPct.toFixed(1)}%</span>
+        <span style="font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:4px;min-width:120px;text-align:center;background:${beats?'rgba(64,208,128,0.15)':'rgba(255,80,96,0.15)'};color:${beats?'var(--green)':'var(--red)'}">
+          ${beats?'▲ Beats index by +'+vsIndex.toFixed(1)+'%':'▼ Trails by '+Math.abs(vsIndex).toFixed(1)+'%'}
+        </span>
+      </div>`;
+    }).join('')}`;
+}
+
+// ── Call new renders ──────────────────────────────────────────────────────────
+  renderHealthScore();
+  renderRebalance();
+  renderDividends();
+  renderTaxLots();
+  renderBenchmark();
+  // What-If: run once DOM ready
+  const wiEl = document.getElementById('wiTicker');
+  if (wiEl) runWhatIf();
+}); // end DOMContentLoaded
+
+</script>
+
+<!-- ════ HEALTH SCORE ════ -->
+<div class="section" id="sec-health">
+  <div class="grid-2">
+    <div class="card">
+      <h2>Portfolio Health Score</h2>
+      <div class="card-desc">Overall grade based on 6 key factors</div>
+      <div class="score-ring">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle fill="none" stroke="var(--bg3)" stroke-width="14" cx="80" cy="80" r="66"/>
+          <circle id="scoreCircle" fill="none" stroke="var(--gold)" stroke-width="14" stroke-linecap="round" cx="80" cy="80" r="66" stroke-dasharray="414.7" stroke-dashoffset="100"/>
+        </svg>
+        <div class="score-ring-text">
+          <div class="score-letter" id="scoreLetter" style="color:var(--gold)">B+</div>
+          <div class="score-num" id="scoreNum">78/100</div>
+        </div>
+      </div>
+      <div id="healthFactors"></div>
+    </div>
+    <div class="card">
+      <h2>Key Recommendations</h2>
+      <div class="card-desc">Actions to improve your score</div>
+      <div id="healthRecs"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ REBALANCE ════ -->
+<div class="section" id="sec-rebalance">
+  <div class="card mb24">
+    <h2>Rebalancing Suggestions</h2>
+    <div class="card-desc">Based on a recommended 3-fund portfolio target allocation</div>
+    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+      <div style="background:var(--bg3);border-radius:8px;padding:10px 16px;border:1px solid var(--border);font-size:0.75rem">
+        <span style="color:var(--text3)">Target: US Stocks </span><span style="color:var(--gold);font-weight:700">50%</span>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:10px 16px;border:1px solid var(--border);font-size:0.75rem">
+        <span style="color:var(--text3)">Target: Intl Stocks </span><span style="color:var(--gold);font-weight:700">30%</span>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:10px 16px;border:1px solid var(--border);font-size:0.75rem">
+        <span style="color:var(--text3)">Target: Bonds </span><span style="color:var(--gold);font-weight:700">10%</span>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:10px 16px;border:1px solid var(--border);font-size:0.75rem">
+        <span style="color:var(--text3)">Target: Individual Stocks </span><span style="color:var(--gold);font-weight:700">10%</span>
+      </div>
+    </div>
+    <div id="rebalanceList"></div>
+  </div>
+  <div class="card">
+    <h2>Current vs Target Allocation</h2>
+    <div class="card-desc">Visual gap analysis</div>
+    <canvas id="rebalChart" height="120"></canvas>
+  </div>
+</div>
+
+<!-- ════ DIVIDENDS ════ -->
+<div class="section" id="sec-dividends">
+  <div class="card mb24">
+    <h2>Dividend &amp; Income Tracker</h2>
+    <div class="card-desc">Estimated annual dividend income across all holdings</div>
+    <div class="div-grid" id="divStats"></div>
+    <div class="holdings-table-wrap">
+      <table class="htable">
+        <thead><tr><th>Ticker</th><th>Name</th><th>Account</th><th>Shares</th><th>Yield %</th><th>Annual Div/Share</th><th>Est. Annual Income</th><th>Est. Monthly</th></tr></thead>
+        <tbody id="divTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════ WHAT-IF ════ -->
+<div class="section" id="sec-whatif">
+  <div class="card mb24">
+    <h2>What-If Simulator</h2>
+    <div class="card-desc">Stress test your portfolio — see the impact of market moves on your total value</div>
+    <div class="whatif-controls">
+      <div class="whatif-field">
+        <label>Select Stock / ETF</label>
+        <select id="wiTicker" onchange="runWhatIf()">
+          <option value="NVDA">NVDA — Nvidia</option>
+          <option value="AAPL">AAPL — Apple</option>
+          <option value="VTI">VTI — Vanguard Total Market</option>
+          <option value="MSFT">MSFT — Microsoft</option>
+          <option value="AMZN">AMZN — Amazon</option>
+          <option value="GOOGL">GOOGL — Alphabet</option>
+          <option value="AVGO">AVGO — Broadcom</option>
+          <option value="ALL_TECH">🧨 ALL TECH — Full tech crash</option>
+          <option value="ALL_MARKET">📉 MARKET CRASH — All positions -30%</option>
+          <option value="ALL_BULL">🚀 BULL RUN — All positions +30%</option>
+        </select>
+      </div>
+      <div class="whatif-field">
+        <label>Price Change: <span id="wiPctLabel" style="color:var(--red);font-weight:700">-30%</span></label>
+        <input type="range" id="wiSlider" min="-80" max="200" step="5" value="-30" oninput="document.getElementById('wiPctLabel').textContent=this.value+'%';document.getElementById('wiPctLabel').style.color=this.value>=0?'var(--green)':'var(--red)';runWhatIf()">
+        <div class="whatif-val" id="wiSliderVal">Drag to adjust</div>
+      </div>
+    </div>
+    <div class="grid-4" id="wiResults" style="margin-bottom:0"></div>
+  </div>
+  <div class="card">
+    <h2>Impact Breakdown</h2>
+    <div class="card-desc">Which positions are affected and by how much</div>
+    <div id="wiBreakdown"></div>
+  </div>
+</div>
+
+<!-- ════ TAX LOTS ════ -->
+<div class="section" id="sec-taxes">
+  <div class="card mb24">
+    <h2>Cost Basis &amp; Tax Analysis</h2>
+    <div class="card-desc">Short-term vs long-term gains — estimated based on your cost basis data</div>
+    <div class="grid-4" id="taxStats" style="margin-bottom:20px"></div>
+    <div class="holdings-table-wrap">
+      <table class="htable">
+        <thead><tr><th>Ticker</th><th>Account</th><th>Shares</th><th>Cost Basis</th><th>Current Value</th><th>Gain/Loss</th><th>Est. Hold Time</th><th>Tax Treatment</th><th>Est. Tax Owed</th></tr></thead>
+        <tbody id="taxTable"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Tax Loss Harvesting Opportunities</h2>
+    <div class="card-desc">Positions in the red that could offset gains if sold</div>
+    <div id="tlhList"></div>
+  </div>
+</div>
+
+<!-- ════ BENCHMARK ════ -->
+<div class="section" id="sec-benchmark">
+  <div class="card mb24">
+    <h2>Benchmark Comparison</h2>
+    <div class="card-desc">How your portfolio stacks up vs major indices — are your stock picks beating the market?</div>
+    <div class="bench-grid" id="benchStats"></div>
+    <canvas id="benchChart" height="110"></canvas>
+  </div>
+  <div class="card">
+    <h2>Individual Stock vs Index Performance</h2>
+    <div class="card-desc">Are your single stocks beating VTI? Here's the scorecard.</div>
+    <div id="stockVsIndex"></div>
+  </div>
+</div>
+
+</body>
+</html>
