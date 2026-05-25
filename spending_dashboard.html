@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spending Dashboard</title>
+<style>
+#gate {
+  position:fixed; top:0; left:0; width:100%; height:100%; z-index:99999;
+  background:#120e1e;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Segoe UI',sans-serif;
+}
+#gate::before {
+  content:'';
+  position:absolute; top:-20%; left:-10%; width:60%; height:60%;
+  background:radial-gradient(ellipse,rgba(160,80,255,0.25) 0%,transparent 70%);
+  pointer-events:none;
+}
+#gate::after {
+  content:'';
+  position:absolute; bottom:-20%; right:-10%; width:55%; height:55%;
+  background:radial-gradient(ellipse,rgba(64,208,200,0.2) 0%,transparent 70%);
+  pointer-events:none;
+}
+.gate-box {
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(160,80,255,0.3);
+  border-radius:20px;
+  padding:48px 44px;
+  width:100%;
+  max-width:400px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+  backdrop-filter:blur(20px);
+  box-shadow:0 8px 40px rgba(120,60,220,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.gate-icon { font-size:2.5rem; margin-bottom:16px; }
+.gate-title {
+  font-size:1.4rem; font-weight:800; color:rgba(255,255,255,0.95);
+  margin-bottom:4px; letter-spacing:-0.02em;
+}
+.gate-subtitle {
+  font-size:0.8rem; color:rgba(160,120,255,0.7); margin-bottom:32px;
+  text-transform:uppercase; letter-spacing:0.08em;
+}
+.gate-input {
+  width:100%; background:rgba(255,255,255,0.07);
+  border:1px solid rgba(160,80,255,0.3); border-radius:12px;
+  padding:14px 18px; font-size:1rem; color:rgba(255,255,255,0.9);
+  font-family:'Segoe UI',sans-serif; outline:none; text-align:center;
+  letter-spacing:0.15em; margin-bottom:16px;
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+.gate-input:focus {
+  border-color:rgba(160,80,255,0.7);
+  box-shadow:0 0 0 3px rgba(160,80,255,0.15);
+}
+.gate-input.error {
+  border-color:rgba(255,80,96,0.7);
+  box-shadow:0 0 0 3px rgba(255,80,96,0.15);
+  animation:shake 0.4s ease;
+}
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}
+}
+.gate-btn {
+  width:100%;
+  background:linear-gradient(135deg,rgba(160,80,255,0.5),rgba(64,208,200,0.4));
+  border:1px solid rgba(160,80,255,0.4); border-radius:12px;
+  padding:14px; font-size:0.9rem; font-weight:700;
+  color:rgba(255,255,255,0.95); font-family:'Segoe UI',sans-serif;
+  cursor:pointer; letter-spacing:0.06em; text-transform:uppercase;
+  transition:all 0.2s; box-shadow:0 4px 16px rgba(120,60,220,0.3);
+}
+.gate-btn:hover {
+  background:linear-gradient(135deg,rgba(160,80,255,0.7),rgba(64,208,200,0.6));
+  box-shadow:0 6px 24px rgba(120,60,220,0.5); transform:translateY(-1px);
+}
+.gate-btn:active { transform:translateY(0); }
+.gate-error {
+  font-size:0.75rem; color:rgba(255,100,120,0.9); margin-top:12px;
+  height:18px; font-weight:600; letter-spacing:0.04em;
+}
+</style>
+</head>
+<body>
+
+<!-- Password Gate -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-icon">💳</div>
+    <div class="gate-title">Spending Dashboard</div>
+    <div class="gate-subtitle">Private Dashboard</div>
+    <input
+      class="gate-input"
+      id="gateInput"
+      type="password"
+      placeholder="Enter password"
+      onkeydown="if(event.key==='Enter')checkPassword()"
+      autocomplete="current-password"
+    >
+    <button class="gate-btn" onclick="checkPassword()">Unlock Dashboard</button>
+    <div class="gate-error" id="gateError"></div>
+  </div>
+</div>
+
+<script>
+// ── SET YOUR PASSWORD HERE ────────────────────────────────────────────────────
+const DASHBOARD_PASSWORD = "changeme123";
+// ─────────────────────────────────────────────────────────────────────────────
+
+if (sessionStorage.getItem('spending_unlocked') === 'true') {
+  document.getElementById('gate').style.display = 'none';
+}
+
+function checkPassword() {
+  const input = document.getElementById('gateInput');
+  const error = document.getElementById('gateError');
+  if (input.value === DASHBOARD_PASSWORD) {
+    sessionStorage.setItem('spending_unlocked', 'true');
+    document.getElementById('gate').style.display = 'none';
+    error.textContent = '';
+  } else {
+    input.classList.remove('error');
+    void input.offsetWidth;
+    input.classList.add('error');
+    error.textContent = 'Incorrect password — try again';
+    input.value = '';
+    input.focus();
+    setTimeout(() => input.classList.remove('error'), 500);
+  }
+}
+</script>
+
+<title>Spending Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:#f0ede4; --bg2:#e8e4d8; --panel:#fff; --panel2:#f7f4ed; --border:#ddd9cc;
+  --teal:#2f4f4f; --slate:#708099; --mint:#a0c4b8; --sky:#87ceeb;
+  --text:#2a2a2a; --text2:#555e6b; --text3:#8a8f9a;
+  --hit:#2f7a5a; --hit-bg:#e6f4ee;
+  --warn:#a05a1a; --warn-bg:#fef3e2;
+  --miss:#8b2233; --miss-bg:#fde8ec;
+  --gold:#c9a84c; --gold-bg:#fdf6e3;
+
+  /* Category colors */
+  --c-heloc:#2f4f4f; --c-bills:#708099; --c-eating:#e07040;
+  --c-groceries:#3a8a72; --c-fun:#c9a84c; --c-shopping:#3a9ec4;
+  --c-offering:#8a5cc4; --c-travel:#0e7490; --c-sub:#708099;
+  --c-misc:#9a8a7a; --c-landscaping:#5a8a3a; --c-gift:#d4607a;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:24px; }
+
+/* ── Header ── */
+.header {
+  background:linear-gradient(135deg,var(--teal) 0%,#3d6b6b 55%,var(--slate) 100%);
+  border-radius:20px; padding:28px 32px; margin-bottom:20px;
+  color:white; box-shadow:0 8px 32px rgba(47,79,79,0.22);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.header h1 { font-family:'Playfair Display',serif; font-size:2rem; color:#f5f5dc; margin-bottom:4px; }
+.header p  { font-size:0.85rem; color:rgba(245,245,220,0.7); }
+.header-right { text-align:right; }
+.header-total { font-family:'Playfair Display',serif; font-size:2.4rem; color:#f5f5dc; line-height:1; }
+.header-sub   { font-size:0.78rem; color:rgba(245,245,220,0.65); margin-top:3px; }
+.header-vs    { font-size:0.82rem; font-weight:600; margin-top:4px; }
+.header-vs.over  { color:#fca5a5; }
+.header-vs.under { color:#6ee7b7; }
+
+/* ── Tabs ── */
+.tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.tab { background:var(--panel); border:2px solid var(--border); border-radius:10px; padding:8px 16px; font-size:0.8rem; font-weight:700; color:var(--text3); cursor:pointer; transition:all 0.2s; }
+.tab.active { background:var(--teal); border-color:var(--teal); color:white; }
+.tab:hover:not(.active) { border-color:var(--teal); color:var(--teal); }
+.tab.future { border-style:dashed; }
+.tab.future.active { background:var(--slate); border-color:var(--slate); color:white; border-style:solid; }
+
+/* ── Month selector ── */
+.month-bar { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; align-items:center; }
+.month-btn { background:var(--panel2); border:1.5px solid var(--border); border-radius:8px; padding:6px 14px; font-size:0.78rem; font-weight:600; color:var(--text3); cursor:pointer; transition:all 0.18s; }
+.month-btn.active { background:var(--teal); border-color:var(--teal); color:white; }
+.month-btn.has-data { border-color:var(--mint); color:var(--teal); }
+.month-btn.has-data.active { background:var(--teal); color:white; }
+.month-btn:hover:not(.active) { border-color:var(--teal); color:var(--teal); }
+
+/* ── Panels ── */
+.panel { background:var(--panel); border-radius:18px; padding:22px; margin-bottom:18px; border:1px solid var(--border); box-shadow:0 2px 16px rgba(47,79,79,0.07); }
+.panel h2 { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--teal); margin-bottom:4px; }
+.panel-desc { font-size:0.74rem; color:var(--text3); margin-bottom:16px; line-height:1.5; }
+
+/* ── Stat row ── */
+.stat-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
+.stat-card { background:var(--panel); border-radius:16px; padding:18px; border:1px solid var(--border); box-shadow:0 2px 10px rgba(47,79,79,0.06); }
+.stat-label { font-size:0.67rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px; }
+.stat-value { font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:2px; }
+.stat-sub   { font-size:0.67rem; color:var(--text3); }
+.stat-bar   { height:4px; border-radius:999px; margin-top:8px; background:var(--bg2); overflow:hidden; }
+.stat-bar-fill { height:100%; border-radius:999px; transition:width 0.4s; }
+
+/* ── Category Summary Grid ── */
+.cat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.cat-card { background:var(--panel2); border-radius:14px; padding:14px 16px; border:1px solid var(--border); border-left:4px solid; }
+.cat-name  { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
+.cat-amount { font-family:'Playfair Display',serif; font-size:1.3rem; margin-bottom:2px; }
+.cat-budget-row { display:flex; justify-content:space-between; align-items:center; margin-top:6px; }
+.cat-budget-label { font-size:0.65rem; color:var(--text3); }
+.cat-budget-val   { font-size:0.72rem; font-weight:700; }
+.cat-bar  { height:5px; border-radius:999px; background:var(--bg2); overflow:hidden; margin-top:6px; }
+.cat-bar-fill { height:100%; border-radius:999px; transition:width 0.4s; }
+.cat-status { font-size:0.65rem; font-weight:700; margin-top:4px; }
+.over-budget  { color:var(--miss); }
+.under-budget { color:var(--hit); }
+.no-budget    { color:var(--text3); }
+
+/* ── Budget Planner ── */
+.budget-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.budget-field { background:var(--panel2); border-radius:10px; padding:10px 12px; border:1px solid var(--border); border-left:3px solid; }
+.budget-field label { display:block; font-size:0.65rem; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:5px; }
+.budget-field input { width:100%; background:white; border:1.5px solid var(--border); border-radius:8px; padding:7px 10px; font-size:0.85rem; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; }
+.budget-field input:focus { border-color:var(--teal); }
+.budget-field input.set { border-color:var(--mint); background:#f0fdf8; }
+
+/* ── Custom Category Manager ── */
+.cat-manager { background:var(--panel2); border-radius:14px; padding:16px; margin-top:16px; border:1px solid var(--border); }
+.cat-manager-title { font-size:0.78rem; font-weight:700; color:var(--teal); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.04em; }
+.cat-tags { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.cat-tag { display:flex; align-items:center; gap:6px; background:white; border:1.5px solid var(--border); border-radius:20px; padding:4px 10px 4px 12px; font-size:0.75rem; font-weight:600; }
+.cat-tag.builtin { opacity:0.7; cursor:default; }
+.cat-tag-remove { background:none; border:none; cursor:pointer; color:var(--text3); font-size:0.85rem; line-height:1; padding:0 2px; border-radius:50%; }
+.cat-tag-remove:hover { background:var(--miss-bg); color:var(--miss); }
+.cat-add-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.cat-add-row input { background:white; border:1.5px solid var(--border); border-radius:10px; padding:7px 12px; font-size:0.82rem; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; width:160px; }
+.cat-add-row input:focus { border-color:var(--teal); }
+.cat-color-pick { width:36px; height:36px; border:1.5px solid var(--border); border-radius:8px; padding:2px; cursor:pointer; background:white; }
+.cat-add-hint { font-size:0.67rem; color:var(--text3); }
+
+
+/* ── Month Review ── */
+.review-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.review-card { background:var(--panel2); border-radius:12px; padding:14px; border:1px solid var(--border); }
+.review-label { font-size:0.67rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:6px; }
+.review-value { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--teal); margin-bottom:2px; }
+.review-sub   { font-size:0.67rem; color:var(--text3); }
+.review-field input { width:100%; background:white; border:1.5px solid var(--border); border-radius:8px; padding:8px 10px; font-size:0.9rem; color:var(--text); font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:600; outline:none; margin-top:4px; }
+.review-field input:focus { border-color:var(--teal); }
+
+/* ── Transaction Table ── */
+.txn-controls { display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+.txn-search { flex:1; min-width:200px; background:white; border:1.5px solid var(--border); border-radius:10px; padding:8px 14px; font-size:0.82rem; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; }
+.txn-search:focus { border-color:var(--teal); }
+.cat-filter { background:white; border:1.5px solid var(--border); border-radius:10px; padding:8px 14px; font-size:0.82rem; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; cursor:pointer; }
+.txn-table-wrap { overflow-x:auto; max-height:400px; overflow-y:auto; }
+.txn-table-wrap::-webkit-scrollbar { width:5px; height:5px; }
+.txn-table-wrap::-webkit-scrollbar-track { background:var(--bg2); border-radius:999px; }
+.txn-table-wrap::-webkit-scrollbar-thumb { background:var(--mint); border-radius:999px; }
+table.txn { width:100%; border-collapse:collapse; font-size:0.78rem; }
+table.txn th { text-align:left; color:var(--teal); font-weight:700; padding:8px 10px; border-bottom:2px solid var(--border); position:sticky; top:0; background:white; z-index:1; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.04em; }
+table.txn td { padding:7px 10px; border-bottom:1px solid var(--bg2); color:var(--text2); vertical-align:middle; }
+table.txn tr:hover td { background:var(--panel2); }
+table.txn tr.refund td { color:var(--hit); }
+.cat-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.68rem; font-weight:700; white-space:nowrap; }
+.cat-select { background:transparent; border:1px solid var(--border); border-radius:6px; padding:3px 6px; font-size:0.72rem; color:var(--text); font-family:'DM Sans',sans-serif; cursor:pointer; outline:none; }
+.cat-select:focus { border-color:var(--teal); }
+.txn-delete { background:none; border:none; cursor:pointer; color:var(--text3); font-size:0.9rem; padding:2px 4px; border-radius:4px; }
+.txn-delete:hover { background:var(--miss-bg); color:var(--miss); }
+.amount-neg { color:var(--miss); }
+.amount-pos { color:var(--hit); }
+
+/* ── Paste Panel ── */
+.paste-panel { background:linear-gradient(135deg,#f7f4ed,#eef4f8); border-radius:18px; padding:22px; margin-bottom:18px; border:2px solid var(--mint); }
+.paste-panel h2 { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--teal); margin-bottom:4px; }
+.paste-row { display:flex; gap:12px; align-items:flex-end; margin-bottom:12px; flex-wrap:wrap; }
+.paste-row select, .paste-row input[type=text] { background:white; border:1.5px solid var(--border); border-radius:10px; padding:8px 14px; font-size:0.82rem; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; }
+.paste-row select:focus, .paste-row input:focus { border-color:var(--teal); }
+textarea#pasteArea { width:100%; min-height:120px; background:white; border:1.5px solid var(--border); border-radius:12px; padding:12px 14px; font-size:0.8rem; color:var(--text); font-family:'DM Sans',sans-serif; resize:vertical; outline:none; line-height:1.6; }
+textarea#pasteArea:focus { border-color:var(--teal); }
+textarea#pasteArea::placeholder { color:var(--text3); }
+.parse-preview { margin-top:14px; background:white; border-radius:12px; padding:14px; border:1px solid var(--border); display:none; }
+.parse-preview h4 { font-size:0.8rem; font-weight:700; color:var(--teal); margin-bottom:10px; }
+.preview-txn { display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid var(--bg2); font-size:0.76rem; }
+.preview-txn:last-child { border-bottom:none; }
+.preview-date { color:var(--text3); min-width:60px; }
+.preview-desc { flex:1; font-weight:500; }
+.preview-amt  { font-weight:700; min-width:80px; text-align:right; }
+.preview-cat  { min-width:140px; }
+
+/* ── Trend Charts ── */
+.chart-grid { display:grid; grid-template-columns:2fr 1fr; gap:18px; margin-bottom:18px; }
+.chart-subtitle { font-size:0.72rem; color:var(--text3); margin-bottom:14px; }
+
+/* ── Spending Trend ── */
+.trend-bar-list { display:flex; flex-direction:column; gap:8px; }
+.trend-bar-row { display:flex; align-items:center; gap:10px; }
+.trend-bar-label { font-size:0.72rem; font-weight:600; min-width:110px; color:var(--text2); }
+.trend-bar-track { flex:1; height:10px; background:var(--bg2); border-radius:999px; overflow:hidden; }
+.trend-bar-fill  { height:100%; border-radius:999px; transition:width 0.4s; }
+.trend-bar-amt   { font-size:0.72rem; font-weight:700; min-width:70px; text-align:right; color:var(--text); }
+
+/* ── Budget vs Actual ── */
+.bva-row { display:flex; flex-direction:column; gap:8px; }
+.bva-item { background:var(--panel2); border-radius:10px; padding:10px 14px; border:1px solid var(--border); }
+.bva-top  { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px; }
+.bva-name { font-size:0.75rem; font-weight:700; color:var(--text); }
+.bva-amounts { font-size:0.72rem; color:var(--text3); }
+.bva-amounts strong { color:var(--text); }
+.bva-track { height:8px; background:var(--bg2); border-radius:999px; overflow:hidden; }
+.bva-fill  { height:100%; border-radius:999px; transition:width 0.4s; }
+.bva-status { font-size:0.65rem; font-weight:700; margin-top:3px; text-align:right; }
+
+/* ── Save button etc ── */
+.btn { padding:10px 22px; border-radius:10px; font-size:0.82rem; font-weight:700; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+.btn-primary   { background:var(--teal); color:white; }
+.btn-primary:hover { background:#3d6b6b; }
+.btn-secondary { background:var(--bg2); color:var(--text2); border:1px solid var(--border); }
+.btn-danger    { background:var(--miss-bg); color:var(--miss); border:1px solid #fca5a580; }
+.btn-gold      { background:var(--gold-bg); color:#7a6010; border:1px solid var(--gold); }
+.saved-msg { font-size:0.75rem; color:var(--hit); font-weight:600; display:none; }
+.saved-msg.show { display:inline; }
+
+/* ── Monthly history table ── */
+.history-wrap { overflow-x:auto; }
+table.hist { width:100%; border-collapse:collapse; font-size:0.76rem; white-space:nowrap; }
+table.hist th { text-align:right; color:var(--teal); font-weight:700; padding:8px 10px; border-bottom:2px solid var(--border); font-size:0.68rem; }
+table.hist th:first-child { text-align:left; }
+table.hist td { padding:7px 10px; border-bottom:1px solid var(--bg2); color:var(--text2); text-align:right; }
+table.hist td:first-child { text-align:left; font-weight:600; color:var(--text); }
+table.hist tr:hover td { background:var(--panel2); }
+table.hist tr.total-row td { font-weight:700; color:var(--teal); background:var(--bg2); }
+.cell-up   { color:var(--hit)!important; }
+.cell-down { color:var(--miss)!important; }
+
+@media(max-width:768px){
+  .stat-row,.cat-grid,.budget-grid,.review-grid,.chart-grid{ grid-template-columns:1fr 1fr; }
+  .chart-grid { grid-template-columns:1fr; }
+  .header { flex-direction:column; gap:12px; }
+  .header-right { text-align:left; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <h1>💳 Spending Dashboard</h1>
+    <p>Monthly budget tracker — paste transactions, track categories, stay on target</p>
+  </div>
+  <div class="header-right">
+    <div class="header-total" id="headerTotal">$0</div>
+    <div class="header-sub" id="headerSub">Total Spent — Select a month</div>
+    <div class="header-vs" id="headerVs"></div>
+  </div>
+</div>
+
+<!-- Year Tabs -->
+<div class="tabs" id="yearTabs"></div>
+
+<!-- Month Selector -->
+<div class="month-bar" id="monthBar"></div>
+
+<!-- Stat Cards -->
+<div class="stat-row" id="statRow"></div>
+
+<!-- Category Summary -->
+<div class="panel">
+  <h2>📊 Spending by Category</h2>
+  <p class="panel-desc">Actual spend per category vs your budget. Red = over, green = under.</p>
+  <div class="cat-grid" id="catGrid"></div>
+</div>
+
+<!-- Budget vs Actual chart + breakdown -->
+<div class="chart-grid">
+  <div class="panel">
+    <h2>📈 Monthly Spend Trend</h2>
+    <p class="chart-subtitle" id="trendSubtitle">Total spending over time</p>
+    <canvas id="trendChart" height="130"></canvas>
+  </div>
+  <div class="panel">
+    <h2>⚖️ Budget vs Actual</h2>
+    <p class="chart-subtitle">This month — by category</p>
+    <div class="bva-row" id="bvaList"></div>
+  </div>
+</div>
+
+<!-- Category Spend Bars -->
+<div class="panel">
+  <h2>🏷️ Category Breakdown</h2>
+  <p class="panel-desc">Relative size of each spending category this month.</p>
+  <div class="trend-bar-list" id="catBars"></div>
+</div>
+
+<!-- Month Review -->
+<div class="panel">
+  <h2>📋 Month Review</h2>
+  <p class="panel-desc">Key monthly figures — HELOC total, CC balance owed, mortgage. Edit directly and save.</p>
+  <div class="review-grid" id="reviewGrid"></div>
+  <div style="display:flex;gap:10px;margin-top:14px;align-items:center">
+    <button class="btn btn-primary" onclick="saveReview()">💾 Save Review</button>
+    <span class="saved-msg" id="reviewSaved">✅ Saved!</span>
+  </div>
+</div>
+
+<!-- Budget Planner -->
+<div class="panel">
+  <h2>🎯 Monthly Budget Planner</h2>
+  <p class="panel-desc">Set your target budget for each category this month. These are saved per month so you can plan ahead. Add custom categories like <strong>Investing</strong> or <strong>Savings</strong> using the manager below.</p>
+  <div class="budget-grid" id="budgetGrid"></div>
+  <div style="display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="saveBudgets()">💾 Save Budgets</button>
+    <button class="btn btn-secondary" onclick="copyLastBudget()">📋 Copy Last Month's Budget</button>
+    <span class="saved-msg" id="budgetSaved">✅ Saved!</span>
+  </div>
+
+  <!-- Custom Category Manager -->
+  <div class="cat-manager">
+    <div class="cat-manager-title">⚙️ Manage Categories — Add or Remove</div>
+    <div class="cat-tags" id="catTags"></div>
+    <div class="cat-add-row">
+      <input type="text" id="newCatName" placeholder="New category name..." maxlength="30" onkeydown="if(event.key==='Enter')addCustomCategory()">
+      <input type="color" id="newCatColor" class="cat-color-pick" value="#3a6ea0" title="Pick a color">
+      <button class="btn btn-primary" onclick="addCustomCategory()" style="padding:7px 16px;font-size:0.78rem">+ Add Category</button>
+      <span class="cat-add-hint">e.g. Investing, Savings, Kids, Medical</span>
+    </div>
+  </div>
+</div>
+
+<!-- Transaction List -->
+<div class="panel">
+  <h2>🧾 Transactions <span id="txnCount" style="font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:400;color:var(--text3)"></span></h2>
+  <p class="panel-desc">All transactions for this month. Change the category using the dropdown — it saves automatically.</p>
+  <div class="txn-controls">
+    <input class="txn-search" id="txnSearch" placeholder="Search transactions..." oninput="renderTxnTable()">
+    <select class="cat-filter" id="catFilter" onchange="renderTxnTable()">
+      <option value="">All Categories</option>
+    </select>
+    <button class="btn btn-danger" onclick="clearMonthTransactions()">🗑 Clear Month</button>
+  </div>
+  <div class="txn-table-wrap">
+    <table class="txn" id="txnTable"></table>
+  </div>
+</div>
+
+<!-- Paste Transactions -->
+<div class="paste-panel">
+  <h2>📥 Import Transactions — Paste from Capital One</h2>
+  <p class="panel-desc" style="color:#4a6a5a">Copy transactions directly from the Capital One website and paste below. The parser will auto-detect dates, descriptions, and amounts. Review and fix any categories before importing.</p>
+
+  <div class="paste-row">
+    <div>
+      <label style="font-size:0.72rem;font-weight:700;color:var(--text3);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em">Year</label>
+      <select id="importYear"></select>
+    </div>
+    <div>
+      <label style="font-size:0.72rem;font-weight:700;color:var(--text3);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em">Month</label>
+      <select id="importMonth"></select>
+    </div>
+  </div>
+
+  <textarea id="pasteArea" placeholder="Paste your Capital One transactions here...
+
+✅ Supported format (Capital One website copy-paste):
+Pending
+Tesla Motors
+Gas/Automotive
+Timothy H. ...1302
+$11.91
+
+May
+15
+Amazon
+Merchandise
+1.25x miles
+Timothy H. ...1302
+$6,255.73
+
+Tip: On the Capital One site, select everything from the first transaction down to the last amount, copy, and paste here. Works for both Pending and Posted transactions."></textarea>
+
+  <div style="display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="parseTransactions()">🔍 Parse Transactions</button>
+    <button class="btn btn-secondary" onclick="clearPaste()">Clear</button>
+    <span id="parseMsg" style="font-size:0.75rem;color:var(--text3)"></span>
+  </div>
+
+  <div class="parse-preview" id="parsePreview">
+    <h4 id="previewTitle">Preview — Review categories before importing</h4>
+    <div id="previewList"></div>
+    <div style="display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-gold" onclick="importTransactions()">✅ Import All Transactions</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('parsePreview').style.display='none'">Cancel</button>
+      <span class="saved-msg" id="importSaved">✅ Imported!</span>
+    </div>
+  </div>
+</div>
+
+<!-- Monthly History Table -->
+<div class="panel">
+  <h2>📅 Monthly History</h2>
+  <p class="panel-desc">Category totals month by month across all years. Select "All Years" to see the full picture.</p>
+  <div class="history-wrap"><table class="hist" id="histTable"></table></div>
+</div>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const ALL_YEARS = ['2026','2027','2028','2029','2030','2031','2032','2033','2034'];
+
+const BASE_CATEGORIES = [
+  'HELOC','Bills','Eating Out','Groceries','Fun Money','Shopping',
+  'Offering','Travel','Subscription','Misc','Landscaping','Gift','Income/Refund'
+];
+
+// Custom categories — persisted to localStorage
+let customCategories = [];
+try { const cc=localStorage.getItem('custom_categories'); if(cc) customCategories=JSON.parse(cc); } catch(e){}
+// Always include Investing & Savings as defaults if not already present
+['Investing','Savings'].forEach(c=>{ if(!customCategories.find(x=>x.name===c)) customCategories.push({name:c,color:'#3a6ea0'}); });
+
+function getAllCategories() { return [...BASE_CATEGORIES.slice(0,-1), ...customCategories.map(c=>c.name), 'Income/Refund']; }
+// Alias for compatibility
+Object.defineProperty(window, 'CATEGORIES', { get: getAllCategories });
+
+function getCatColor(cat) {
+  if(CAT_COLORS[cat]) return CAT_COLORS[cat];
+  const custom = customCategories.find(c=>c.name===cat);
+  return custom ? custom.color : 'var(--slate)';
+}
+
+const CAT_COLORS_STATIC = {
+  'HELOC':'var(--c-heloc)','Bills':'var(--c-bills)','Eating Out':'var(--c-eating)',
+  'Groceries':'var(--c-groceries)','Fun Money':'var(--c-fun)','Shopping':'var(--c-shopping)',
+  'Offering':'var(--c-offering)','Travel':'var(--c-travel)','Subscription':'var(--c-sub)',
+  'Misc':'var(--c-misc)','Landscaping':'var(--c-landscaping)','Gift':'var(--c-gift)',
+  'Income/Refund':'var(--hit)',
+};
+const CAT_COLORS = new Proxy(CAT_COLORS_STATIC, { get(t,k){ return t[k] || (customCategories.find(c=>c.name===k)||{}).color || 'var(--slate)'; } });
+
+const CAT_KEYWORDS = {
+  'HELOC':['home depot','floor & decor','floor and decor','lowes','ace hardware','build','lumber','tile','plumbing','renovation','heloc'],
+  'Bills':['ladwp','edison','at&t','verizon','spectrum','insurance','tesla','rent','utilities','water','gas bill','city of','dmv','registration','comcast'],
+  'Eating Out':['restaurant','dining','kitchen','chix','robin','hatchet','esco','potato chips deli','mcdonald','chipotle','starbucks','coffee','sushi','pizza','burger','taco','subway','panera','panda','diner','bistro','cafe','grill','cantina','boba','doordash','uber eats','grubhub','postmates'],
+  'Groceries':['whole foods','target','ralphs','vons','sprouts','trader joe','costco','walmart','kroger','safeway','pavilions','smart & final','food 4 less','grocery','market','supermarket','aldi','publix'],
+  'Fun Money':['amazon','olympics','aquarium','cinema','movie','concert','game','entertainment','ticketmaster','amc','regal','dave buster','bowling','arcade','golf','topgolf','brookside','sport','tickets','event','la28','angel','dodger','laker','clipper','knott','disneyland','universal','six flags'],
+  'Shopping':['nike','adidas','zara','h&m','nordstrom','macy','gap','old navy','banana republic','j.crew','uniqlo','forever 21','express','ann taylor','victoria','lululemon','anthropologie','urban outfitters','revolve','asos','shein','fashion','boutique','mall','outlet'],
+  'Offering':['fcbc','faithful central','church','tithe','offering','donation','charity','give','compassion','samaritan'],
+  'Travel':['southwest','frontier','united','delta','american airlines','spirit','alaska air','jetblue','airbnb','marriott','hilton','hyatt','hotel','motel','inn','expedia','booking','kayak','capital one travel','uber','lyft','parking','toll','rental car','enterprise','hertz','avis','train','amtrak','greyhound','cruise'],
+  'Subscription':['netflix','hulu','disney','spotify','apple','amazon prime','youtube','hbo','peacock','paramount','adobe','microsoft','google','icloud','psn','playstation','xbox','nintendo','vivint','security','logos','bible'],
+  'Landscaping':['gardener','landscap','lawn','garden','nursery','home garden','plant'],
+  'Gift':['cashapp','venmo','zelle','gift','birthday','present','baby shower','wedding','card'],
+  'Misc':['u-haul','uhaul','storage','moving','post office','fedex','ups','shipping','miscellaneous'],
+};
+
+// April 2026 seed data from the CSV
+const SEED_DATA = {
+  '2026-3': {
+    transactions: [
+      {id:'s1',date:'04/12',item:'Umbrella',amount:12.00,vendor:'Amazon',category:'Fun Money'},
+      {id:'s2',date:'04/11',item:'Baby royal birthday gift',amount:50.00,vendor:'Cashapp',category:'Gift'},
+      {id:'s3',date:'04/10',item:'Landscaping',amount:70.00,vendor:'Gardener Zelle',category:'Landscaping'},
+      {id:'s4',date:'04/11',item:'Groceries',amount:19.00,vendor:'Whole Foods',category:'Groceries'},
+      {id:'s5',date:'04/10',item:'Groceries',amount:116.42,vendor:'Target',category:'Groceries'},
+      {id:'s6',date:'04/10',item:'Bible Software',amount:10.00,vendor:'Logos',category:'Subscription'},
+      {id:'s7',date:'04/09',item:'Olympic hockey tickets',amount:187.00,vendor:'LA28 Olympics',category:'Fun Money'},
+      {id:'s8',date:'04/12',item:'Dinner',amount:112.00,vendor:'Kitchen Craft',category:'Eating Out'},
+      {id:'s9',date:'04/14',item:'Groceries',amount:87.00,vendor:'Target',category:'Groceries'},
+      {id:'s10',date:'04/14',item:'Manuscript Shop',amount:178.00,vendor:'Manuscript Shop',category:'Fun Money'},
+      {id:'s11',date:'04/14',item:'LADWP',amount:1041.00,vendor:'LADWP',category:'Bills'},
+      {id:'s12',date:'04/15',item:'Eating out',amount:22.00,vendor:'Mean Chix',category:'Eating Out'},
+      {id:'s13',date:'04/14',item:'Michael Jackson movie',amount:50.00,vendor:'Cineopolis',category:'Fun Money'},
+      {id:'s14',date:'04/20',item:'Brita filter',amount:30.00,vendor:'Amazon',category:'Fun Money'},
+      {id:'s15',date:'04/19',item:'Red Robin family dinner',amount:68.00,vendor:'Red Robin',category:'Eating Out'},
+      {id:'s16',date:'04/19',item:'Tithes/Offering',amount:100.00,vendor:'FCBC',category:'Offering'},
+      {id:'s17',date:'04/22',item:'PSN',amount:80.00,vendor:'Sony',category:'Subscription'},
+      {id:'s18',date:'04/22',item:'Groceries',amount:170.00,vendor:'Target',category:'Groceries'},
+      {id:'s19',date:'04/21',item:'Security',amount:41.00,vendor:'Vivint',category:'Subscription'},
+      {id:'s20',date:'04/20',item:'Dining',amount:145.00,vendor:'Hatchet Hall',category:'Eating Out'},
+      {id:'s21',date:'04/18',item:'Apple Subscription',amount:9.99,vendor:'Apple',category:'Subscription'},
+      {id:'s22',date:'04/20',item:'Tithes/Offering',amount:100.00,vendor:'Faithful Central Bible',category:'Offering'},
+      {id:'s23',date:'04/20',item:'U-Haul Rental',amount:40.33,vendor:'U-Haul',category:'Misc'},
+      {id:'s24',date:'04/20',item:'Dining',amount:144.38,vendor:'Hatchet Hall',category:'Eating Out'},
+      {id:'s25',date:'04/20',item:'Disney+',amount:18.99,vendor:'Disney Plus',category:'Subscription'},
+      {id:'s26',date:'04/20',item:'Golf',amount:18.58,vendor:'Brookside Golf Course',category:'Fun Money'},
+      {id:'s27',date:'04/21',item:'Merchandise',amount:31.27,vendor:'Amazon',category:'HELOC'},
+      {id:'s28',date:'04/21',item:'Security',amount:47.15,vendor:'Vivint',category:'Subscription'},
+      {id:'s29',date:'04/21',item:'Dining',amount:63.39,vendor:'Red Robin',category:'Eating Out'},
+      {id:'s30',date:'04/22',item:'Merchandise',amount:559.70,vendor:'Amazon',category:'HELOC'},
+      {id:'s31',date:'04/22',item:'Merchandise',amount:151.44,vendor:'Amazon',category:'HELOC'},
+      {id:'s32',date:'04/23',item:'Groceries',amount:170.85,vendor:'Target',category:'Groceries'},
+      {id:'s33',date:'04/23',item:'Merchandise',amount:217.29,vendor:'Amazon',category:'HELOC'},
+      {id:'s34',date:'04/23',item:'Tesla Insurance/Service',amount:108.65,vendor:'Tesla Motors',category:'Bills'},
+      {id:'s35',date:'04/23',item:'PSN Subscription',amount:79.99,vendor:'PlayStation Network',category:'Fun Money'},
+      {id:'s36',date:'04/23',item:'Travel Credit',amount:-139.69,vendor:'Capital One Travel',category:'Income/Refund'},
+      {id:'s37',date:'04/24',item:'Merchandise',amount:164.60,vendor:'Amazon',category:'HELOC'},
+      {id:'s38',date:'04/24',item:'Dining',amount:38.42,vendor:"Esco's New York",category:'Eating Out'},
+      {id:'s39',date:'04/24',item:'Home Improvement',amount:735.33,vendor:'Home Depot',category:'HELOC'},
+      {id:'s40',date:'04/24',item:'Apple Subscription',amount:5.99,vendor:'Apple',category:'Subscription'},
+      {id:'s41',date:'04/24',item:'Flooring',amount:772.80,vendor:'Floor & Decor',category:'HELOC'},
+      {id:'s42',date:'04/25',item:'Amazon Subscription',amount:4.99,vendor:'Amazon',category:'Subscription'},
+      {id:'s43',date:'04/27',item:'Tithes/Offering',amount:50.00,vendor:'Faithful Central Bible',category:'Offering'},
+      {id:'s44',date:'04/27',item:'Return/Refund',amount:-151.44,vendor:'Amazon',category:'Income/Refund'},
+      {id:'s45',date:'04/27',item:'Merchandise',amount:259.23,vendor:'Nike',category:'Shopping'},
+      {id:'s46',date:'04/27',item:'Airfare',amount:189.98,vendor:'Frontier Airlines',category:'Travel'},
+      {id:'s47',date:'04/27',item:'City Fee',amount:2.58,vendor:'City of Santa Monica',category:'Bills'},
+      {id:'s48',date:'04/27',item:'Groceries',amount:12.55,vendor:'Ralphs',category:'Groceries'},
+      {id:'s49',date:'04/27',item:'Aquarium Tickets',amount:89.90,vendor:'Aquarium of the Pacific',category:'Fun Money'},
+      {id:'s50',date:'04/27',item:'Dining',amount:0.76,vendor:'Potato Chips Deli',category:'Eating Out'},
+      {id:'s51',date:'04/28',item:'Airfare',amount:38.00,vendor:'Southwest Airlines',category:'Travel'},
+      {id:'s52',date:'04/28',item:'Merchandise',amount:54.86,vendor:'Amazon',category:'HELOC'},
+      {id:'s53',date:'04/28',item:'Airfare',amount:215.20,vendor:'Southwest Airlines',category:'Travel'},
+      {id:'s54',date:'04/29',item:'Groceries',amount:20.06,vendor:'Whole Foods Market',category:'Groceries'},
+      {id:'s55',date:'04/29',item:'Apple Subscription',amount:10.99,vendor:'Apple',category:'Subscription'},
+      {id:'s56',date:'04/29',item:'Apple Subscription',amount:10.99,vendor:'Apple',category:'Subscription'},
+      {id:'s57',date:'04/29',item:'Groceries',amount:72.40,vendor:'Target',category:'Groceries'},
+      {id:'s58',date:'04/29',item:'Merchandise',amount:99.99,vendor:'Amazon',category:'HELOC'},
+      {id:'s59',date:'04/29',item:'Merchandise',amount:32.91,vendor:'Amazon',category:'HELOC'},
+      {id:'s60',date:'04/29',item:'Merchandise',amount:40.60,vendor:'Amazon',category:'HELOC'},
+      {id:'s61',date:'04/29',item:'Merchandise',amount:53.77,vendor:'Amazon',category:'HELOC'},
+      {id:'s62',date:'04/29',item:'Merchandise',amount:307.29,vendor:'Amazon',category:'HELOC'},
+      {id:'s63',date:'04/29',item:'Home Improvement',amount:555.71,vendor:'Home Depot',category:'HELOC'},
+      {id:'s64',date:'04/29',item:'Merchandise',amount:1019.58,vendor:'Amazon',category:'HELOC'},
+      {id:'s65',date:'04/29',item:'Merchandise',amount:60.14,vendor:'Amazon',category:'HELOC'},
+      {id:'s66',date:'04/29',item:'Merchandise',amount:429.02,vendor:'Amazon',category:'HELOC'},
+      {id:'s67',date:'04/29',item:'Home Improvement',amount:14.59,vendor:'Home Depot',category:'HELOC'},
+    ],
+    budgets:{ 'HELOC':5000,'Bills':1200,'Eating Out':600,'Groceries':500,'Fun Money':500,'Shopping':300,'Offering':250,'Travel':400,'Subscription':150,'Misc':100,'Landscaping':100,'Gift':100 },
+    review:{ heloc:5000, ccOwed:4899, mortgage:3129 }
+  }
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let data = {}; // { '2026-3': { transactions:[], budgets:{}, review:{} }, ... }
+let currentYear = '2026';
+let currentMonth = 3; // April (0-indexed)
+let pendingImport = [];
+let trendChartObj = null;
+
+// Load from localStorage + merge seed
+try { const s=localStorage.getItem('spending_data'); if(s) data=JSON.parse(s); } catch(e){}
+// Merge seed if April 2026 not overridden
+if(!data['2026-3']) data['2026-3'] = SEED_DATA['2026-3'];
+
+function save() {
+  try { localStorage.setItem('spending_data',JSON.stringify(data)); } catch(e){}
+}
+
+function getMonthData(yr,mo) {
+  const key=`${yr}-${mo}`;
+  if(!data[key]) data[key]={ transactions:[], budgets:{}, review:{} };
+  return data[key];
+}
+
+function getMonthKey(yr,mo){ return `${yr}-${mo}`; }
+
+// ── FORMAT ────────────────────────────────────────────────────────────────────
+function fmt(n,dec=2){ if(n==null||isNaN(n))return'—'; const s=Math.abs(n); const str='$'+s.toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec}); return n<0?'-'+str:str; }
+function fmtChange(n){ if(!n&&n!==0)return''; return (n>=0?'▲ +':'▼ ')+fmt(Math.abs(n)); }
+
+// ── CATEGORY TOTALS ───────────────────────────────────────────────────────────
+function getCatTotals(txns) {
+  const totals={};
+  getAllCategories().forEach(c=>totals[c]=0);
+  txns.forEach(t=>{ if(totals[t.category]!=null) totals[t.category]+=t.amount; else totals['Misc']+=t.amount; });
+  return totals;
+}
+
+function getTotalSpend(txns) {
+  return txns.filter(t=>t.category!=='Income/Refund').reduce((s,t)=>s+(t.amount>0?t.amount:0),0);
+}
+
+// ── AUTO CATEGORIZE ───────────────────────────────────────────────────────────
+function autoCategorize(desc, vendor) {
+  const text = ((desc||'')+(vendor||'')).toLowerCase();
+  for(const [cat, keywords] of Object.entries(CAT_KEYWORDS)) {
+    if(keywords.some(k=>text.includes(k))) return cat;
+  }
+  if(text.includes('credit')||text.includes('refund')||text.includes('return')||text.includes('payment')) return 'Income/Refund';
+  return 'Misc';
+}
+
+// ── TABS & MONTH BAR ──────────────────────────────────────────────────────────
+function buildTabs() {
+  document.getElementById('yearTabs').innerHTML =
+    ALL_YEARS.map(yr=>`<div class="tab${yr===currentYear?' active':''}${parseInt(yr)>2026?' future':''}" onclick="setYear('${yr}')">${yr}</div>`).join('') +
+    `<div class="tab${currentYear==='all'?' active':''}" onclick="setYear('all')">All Years</div>`;
+}
+
+function buildMonthBar(yr) {
+  if(yr==='all'){ document.getElementById('monthBar').innerHTML=''; return; }
+  const bar = document.getElementById('monthBar');
+  bar.innerHTML = MONTHS.map((m,i)=>{
+    const hasData = data[`${yr}-${i}`]?.transactions?.length>0;
+    const isActive = i===currentMonth && yr===currentYear;
+    return`<div class="month-btn${isActive?' active':''}${hasData?' has-data':''}" onclick="setMonth(${i})">${m}</div>`;
+  }).join('');
+}
+
+function setYear(yr) {
+  currentYear=yr;
+  buildTabs();
+  if(yr!=='all') buildMonthBar(yr);
+  renderAll();
+}
+
+function setMonth(mo) {
+  currentMonth=mo;
+  buildMonthBar(currentYear);
+  renderAll();
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────────────────────
+function renderAll() {
+  if(currentYear==='all') { renderHistory(); renderTrend(); return; }
+  const md = getMonthData(currentYear, currentMonth);
+  const txns = md.transactions||[];
+  const budgets = md.budgets||{};
+  const review = md.review||{};
+  const totals = getCatTotals(txns);
+  const totalSpend = getTotalSpend(txns);
+  const totalBudget = Object.values(budgets).reduce((s,v)=>s+(+v||0),0);
+
+  // Header
+  document.getElementById('headerTotal').textContent = fmt(totalSpend);
+  document.getElementById('headerSub').textContent = `Total Spent — ${MONTHS[currentMonth]} ${currentYear}`;
+  if(totalBudget>0) {
+    const diff = totalBudget-totalSpend;
+    const el = document.getElementById('headerVs');
+    el.textContent = diff>=0 ? `${fmt(diff)} under budget` : `${fmt(Math.abs(diff))} OVER budget`;
+    el.className = 'header-vs '+(diff>=0?'under':'over');
+  } else { document.getElementById('headerVs').textContent=''; }
+
+  renderStats(txns, totals, budgets, totalSpend, totalBudget);
+  renderCatGrid(totals, budgets, totalSpend);
+  renderBvaList(totals, budgets);
+  renderCatBars(totals, totalSpend);
+  renderReview(review);
+  renderBudgetGrid(budgets);
+  renderTxnTable(txns);
+  renderHistory();
+  renderTrend();
+  populateCatFilter();
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+function renderStats(txns, totals, budgets, totalSpend, totalBudget) {
+  const refunds = txns.filter(t=>t.amount<0).reduce((s,t)=>s+Math.abs(t.amount),0);
+  const largestCat = CATEGORIES.filter(c=>c!=='Income/Refund').sort((a,b)=>(totals[b]||0)-(totals[a]||0))[0];
+  document.getElementById('statRow').innerHTML=[
+    {label:'Total Spent',value:fmt(totalSpend),sub:`${txns.filter(t=>t.amount>0).length} transactions`,pct:totalBudget>0?Math.min(totalSpend/totalBudget*100,100):50,color:'#2f4f4f'},
+    {label:'Total Budget',value:totalBudget>0?fmt(totalBudget):'Not set',sub:totalBudget>0?(totalSpend<=totalBudget?'✅ Under budget':'⚠️ Over budget'):'Set budgets below',pct:100,color:'#3a9ec4'},
+    {label:'Refunds / Credits',value:fmt(refunds),sub:`${txns.filter(t=>t.amount<0).length} credits`,pct:Math.min(refunds/500*100,100),color:'#3a8a72'},
+    {label:'Biggest Category',value:largestCat||'—',sub:largestCat?fmt(totals[largestCat]):'',pct:totalSpend>0?(totals[largestCat]||0)/totalSpend*100:0,color:largestCat?CAT_COLORS[largestCat].replace('var(','').replace(')',''):'#708099'},
+  ].map(c=>`<div class="stat-card">
+    <div class="stat-label">${c.label}</div>
+    <div class="stat-value" style="color:${c.color.includes('--')?'var('+c.color+')':c.color}">${c.value}</div>
+    <div class="stat-sub">${c.sub}</div>
+    <div class="stat-bar"><div class="stat-bar-fill" style="width:${Math.min(c.pct,100).toFixed(1)}%;background:${c.color.includes('--')?'var('+c.color+')':c.color}"></div></div>
+  </div>`).join('');
+}
+
+// ── CATEGORY GRID ─────────────────────────────────────────────────────────────
+function renderCatGrid(totals, budgets, totalSpend) {
+  document.getElementById('catGrid').innerHTML = getAllCategories().filter(c=>c!=='Income/Refund').map(cat=>{
+    const amt = totals[cat]||0;
+    const bud = budgets[cat]||0;
+    const pct = bud>0 ? Math.min(amt/bud*100,120) : 0;
+    const barColor = bud>0 ? (pct>100?'var(--miss)':'var(--hit)') : CAT_COLORS[cat];
+    const status = bud>0 ? (amt>bud ? `⚠️ ${fmt(amt-bud)} over` : `✅ ${fmt(bud-amt)} left`) : '';
+    const shareOfTotal = totalSpend>0 ? (amt/totalSpend*100).toFixed(1) : 0;
+    return`<div class="cat-card" style="border-left-color:${CAT_COLORS[cat]}">
+      <div class="cat-name" style="color:${CAT_COLORS[cat]}">${cat}</div>
+      <div class="cat-amount">${fmt(amt)}</div>
+      <div style="font-size:0.65rem;color:var(--text3)">${shareOfTotal}% of total</div>
+      ${bud>0?`
+        <div class="cat-budget-row">
+          <span class="cat-budget-label">Budget</span>
+          <span class="cat-budget-val">${fmt(bud)}</span>
+        </div>
+        <div class="cat-bar"><div class="cat-bar-fill" style="width:${Math.min(pct,100).toFixed(1)}%;background:${barColor}"></div></div>
+        <div class="cat-status ${amt>bud?'over-budget':'under-budget'}">${status}</div>
+      `:`<div class="cat-status no-budget">No budget set</div>`}
+    </div>`;
+  }).join('');
+}
+
+// ── BUDGET VS ACTUAL ──────────────────────────────────────────────────────────
+function renderBvaList(totals, budgets) {
+  const cats = getAllCategories().filter(c=>c!=='Income/Refund'&&(budgets[c]||totals[c])).sort((a,b)=>(totals[b]||0)-(totals[a]||0)).slice(0,8);
+  document.getElementById('bvaList').innerHTML = cats.length ? cats.map(cat=>{
+    const amt=totals[cat]||0, bud=budgets[cat]||0;
+    const pct=bud>0?Math.min(amt/bud*100,120):100;
+    const over=bud>0&&amt>bud;
+    return`<div class="bva-item">
+      <div class="bva-top">
+        <span class="bva-name">${cat}</span>
+        <span class="bva-amounts">${fmt(amt)} ${bud>0?`/ <strong>${fmt(bud)}</strong>`:''}</span>
+      </div>
+      <div class="bva-track"><div class="bva-fill" style="width:${Math.min(pct,100).toFixed(1)}%;background:${over?'var(--miss)':CAT_COLORS[cat]}"></div></div>
+      ${bud>0?`<div class="bva-status ${over?'over-budget':'under-budget'}">${over?`⚠️ ${fmt(amt-bud)} over`:`✅ ${fmt(bud-amt)} left`}</div>`:''}
+    </div>`;
+  }).join('') : '<div style="color:var(--text3);font-size:0.8rem;padding:10px">No data this month.</div>';
+}
+
+// ── CATEGORY BARS ─────────────────────────────────────────────────────────────
+function renderCatBars(totals, totalSpend) {
+  const sorted = getAllCategories().filter(c=>c!=='Income/Refund'&&(totals[c]||0)>0).sort((a,b)=>(totals[b]||0)-(totals[a]||0));
+  const max = sorted.length>0?(totals[sorted[0]]||0):1;
+  document.getElementById('catBars').innerHTML = sorted.map(cat=>{
+    const amt=totals[cat]||0;
+    const pct=totalSpend>0?amt/max*100:0;
+    return`<div class="trend-bar-row">
+      <span class="trend-bar-label">${cat}</span>
+      <div class="trend-bar-track"><div class="trend-bar-fill" style="width:${pct.toFixed(1)}%;background:${CAT_COLORS[cat]}"></div></div>
+      <span class="trend-bar-amt">${fmt(amt)}</span>
+    </div>`;
+  }).join('') || '<div style="color:var(--text3);padding:10px;font-size:0.8rem">No transactions this month.</div>';
+}
+
+// ── REVIEW ────────────────────────────────────────────────────────────────────
+function renderReview(review) {
+  document.getElementById('reviewGrid').innerHTML = [
+    {label:'HELOC Balance',key:'heloc',val:review.heloc,hint:'Total HELOC balance'},
+    {label:'CC Balance Owed',key:'ccOwed',val:review.ccOwed,hint:'What you owe on credit card'},
+    {label:'Mortgage Payment',key:'mortgage',val:review.mortgage,hint:'Monthly mortgage amount'},
+    {label:'Other Notes',key:'notes',val:review.notes,hint:'Any other notes for the month'},
+  ].map(f=>`<div class="review-card">
+    <div class="review-label">${f.label}</div>
+    ${f.key!=='notes'
+      ? `<div class="review-value">${f.val?fmt(f.val,0):'—'}</div>`
+      : `<div class="review-value" style="font-size:0.9rem">${f.val||'—'}</div>`
+    }
+    <div class="review-sub">${f.hint}</div>
+    <div class="review-field">
+      <input type="${f.key!=='notes'?'number':'text'}" id="rv_${f.key}" value="${f.val||''}" placeholder="${f.key!=='notes'?'0':'Add notes...'}" step="0.01">
+    </div>
+  </div>`).join('');
+}
+
+function saveReview() {
+  const md=getMonthData(currentYear,currentMonth);
+  md.review={ heloc:+document.getElementById('rv_heloc')?.value||0, ccOwed:+document.getElementById('rv_ccOwed')?.value||0, mortgage:+document.getElementById('rv_mortgage')?.value||0, notes:document.getElementById('rv_notes')?.value||'' };
+  save(); flash('reviewSaved');
+}
+
+// ── BUDGET GRID ───────────────────────────────────────────────────────────────
+function renderBudgetGrid(budgets) {
+  document.getElementById('budgetGrid').innerHTML = getAllCategories().filter(c=>c!=='Income/Refund').map(cat=>`
+    <div class="budget-field" style="border-left-color:${CAT_COLORS[cat]}">
+      <label style="color:${CAT_COLORS[cat]}">${cat}</label>
+      <input type="number" id="bud_${cat.replace(/[^a-z0-9]/gi,'_')}" value="${budgets[cat]||''}" placeholder="No budget" step="10" class="${budgets[cat]?'set':''}" oninput="this.classList.toggle('set',!!this.value)">
+    </div>`).join('');
+}
+
+function saveBudgets() {
+  const md=getMonthData(currentYear,currentMonth);
+  const budgets={};
+  CATEGORIES.filter(c=>c!=='Income/Refund').forEach(cat=>{
+    const el=document.getElementById('bud_'+cat.replace(/[^a-z0-9]/gi,'_'));
+    if(el&&el.value) budgets[cat]=+el.value;
+  });
+  md.budgets=budgets; save(); flash('budgetSaved'); renderAll();
+}
+
+function copyLastBudget() {
+  // Find previous month with budget data
+  let mo=currentMonth-1,yr=parseInt(currentYear);
+  while(true){
+    if(mo<0){mo=11;yr--;}
+    if(yr<2026) break;
+    const prev=data[`${yr}-${mo}`];
+    if(prev?.budgets&&Object.keys(prev.budgets).length>0){
+      const md=getMonthData(currentYear,currentMonth);
+      md.budgets={...prev.budgets}; save();
+      renderBudgetGrid(md.budgets); flash('budgetSaved');
+      return;
+    }
+    mo--;
+  }
+  alert('No previous month budget found.');
+}
+
+// ── TRANSACTION TABLE ─────────────────────────────────────────────────────────
+function renderTxnTable(txns) {
+  const md=getMonthData(currentYear,currentMonth);
+  const allTxns=txns||md.transactions||[];
+  const search=(document.getElementById('txnSearch')?.value||'').toLowerCase();
+  const catF=document.getElementById('catFilter')?.value||'';
+  const filtered=allTxns.filter(t=>{
+    const matchSearch=!search||(t.item||'').toLowerCase().includes(search)||(t.vendor||'').toLowerCase().includes(search)||(t.category||'').toLowerCase().includes(search);
+    const matchCat=!catF||t.category===catF;
+    return matchSearch&&matchCat;
+  });
+  document.getElementById('txnCount').textContent=`— ${filtered.length} of ${allTxns.length} transactions`;
+
+  const catOpts=CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  const rows=filtered.sort((a,b)=>b.date?.localeCompare(a.date)).map(t=>`
+    <tr class="${t.amount<0?'refund':''}">
+      <td>${t.date||''}</td>
+      <td>${t.item||''}</td>
+      <td style="color:var(--text3)">${t.vendor||''}</td>
+      <td class="${t.amount<0?'amount-pos':'amount-neg'}">${fmt(t.amount)}</td>
+      <td><select class="cat-select" style="border-left:3px solid ${CAT_COLORS[t.category]||'var(--text3)'}" onchange="updateTxnCat('${t.id}',this.value)">
+        ${CATEGORIES.map(c=>`<option value="${c}"${c===t.category?' selected':''}>${c}</option>`).join('')}
+      </select></td>
+      <td><button class="txn-delete" onclick="deleteTxn('${t.id}')">✕</button></td>
+    </tr>`).join('');
+
+  document.getElementById('txnTable').innerHTML=`
+    <tr><th>Date</th><th>Item</th><th>Vendor</th><th>Amount</th><th>Category</th><th></th></tr>
+    ${rows||'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3)">No transactions yet — paste from Capital One below!</td></tr>'}`;
+}
+
+function populateCatFilter() {
+  const el=document.getElementById('catFilter');
+  if(!el) return;
+  const cur=el.value;
+  el.innerHTML=`<option value="">All Categories</option>`+getAllCategories().map(c=>`<option value="${c}">${c}</option>`).join('');
+  el.value=cur;
+}
+
+function updateTxnCat(id, cat) {
+  const md=getMonthData(currentYear,currentMonth);
+  const txn=md.transactions.find(t=>t.id===id);
+  if(txn){ txn.category=cat; save(); renderAll(); }
+}
+
+function deleteTxn(id) {
+  const md=getMonthData(currentYear,currentMonth);
+  md.transactions=md.transactions.filter(t=>t.id!==id);
+  save(); renderAll();
+}
+
+function clearMonthTransactions() {
+  if(!confirm(`Clear all transactions for ${MONTHS[currentMonth]} ${currentYear}?`)) return;
+  const key=getMonthKey(currentYear,currentMonth);
+  if(data[key]) data[key].transactions=[];
+  save(); renderAll();
+}
+
+// ── PASTE PARSER ──────────────────────────────────────────────────────────────
+// Handles the real Capital One multi-line copy-paste format:
+//   Pending               OR     May
+15
+//   Vendor Name                  Vendor Name
+//   Category                     Category
+//   Timothy H. ...1302           1.25x miles / Timothy H. ...1302
+//   $Amount                      $Amount
+function parseTransactions() {
+  const raw = document.getElementById('pasteArea').value.trim();
+  if(!raw){ document.getElementById('parseMsg').textContent='Please paste some transactions first.'; return; }
+
+  const importYr = document.getElementById('importYear').value;
+  const importMo = +document.getElementById('importMonth').value;
+
+  const lines = raw.split('\n').map(l=>l.trim());
+  const parsed = [];
+
+  // ── Strategy: scan for amount lines ($X.XX or -$X.XX) then look back ──
+  // Capital One structure per transaction (posted):
+  //   Month (e.g. "May")
+  //   Day number (e.g. "15")
+  //   Vendor name
+  //   Category (e.g. "Merchandise", "Dining")
+  //   "1.25x miles" (optional)
+  //   "Timothy H. ...1302"
+  //   "$6,255.73"
+  // Pending transactions:
+  //   "Pending"
+  //   Vendor name
+  //   Category
+  //   "Timothy H. ...1302"
+  //   "$Amount"
+
+  // Skip noise lines
+  const skipPatterns = [
+    /^(date|description|amount|category|card|details|print|download|view statement|total:|statement ending|posted transactions|1\.25x miles|payment from|timothy h\.|\.\.\.(\d{4}))/i,
+    /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)$/i,
+    /^\d{1,2}$/,  // lone day numbers
+    /^(payment|interest charge)/i,
+  ];
+
+  function isSkip(l) { return skipPatterns.some(p=>p.test(l)); }
+  function isAmount(l) { return /^-?\$[\d,]+\.\d{2}$/.test(l); }
+  function isDate(l) { return /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+\d{1,2}/i.test(l) || /^pending$/i.test(l) || /^\d{1,2}\/\d{1,2}/i.test(l); }
+  function isCapOneCategory(l) {
+    return /^(merchandise|grocery|dining|internet|phone\/cable|other services|other travel|other|gas\/automotive|insurance|professional services|payment)/i.test(l);
+  }
+
+  // Walk lines, collect blocks ending in an amount
+  let i = 0;
+  while(i < lines.length) {
+    const line = lines[i];
+
+    // Find an amount line
+    if(!isAmount(line)) { i++; continue; }
+
+    const amtStr = line;
+    const amount = parseFloat(amtStr.replace(/[$,]/g,''));
+    if(isNaN(amount) || amount === 0) { i++; continue; }
+
+    // Skip payments to Capital One
+    // Look back up to 6 lines for vendor name + date
+    let vendor = '';
+    let dateStr = '';
+    let isPending = false;
+
+    // Collect previous non-skip lines (up to 6 back)
+    const lookback = [];
+    for(let j=i-1; j>=Math.max(0,i-8); j--) {
+      const l = lines[j].trim();
+      if(!l) continue;
+      lookback.unshift(l);
+    }
+
+    // Find date/pending marker
+    for(let k=0; k<lookback.length; k++) {
+      const l = lookback[k];
+      if(/^pending$/i.test(l)) { isPending=true; dateStr='Pending'; break; }
+      // "May 15" style (month + day on same line after joining)
+      const mo3 = l.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})/i);
+      if(mo3) {
+        const moNum=(MONTHS.findIndex(m=>m.toLowerCase()===mo3[1].toLowerCase())+1).toString().padStart(2,'0');
+        dateStr=`${moNum}/${mo3[2].padStart(2,'0')}`;
+        break;
+      }
+      // Lone month name — next line might be day
+      if(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/i.test(l) && k+1<lookback.length && /^\d{1,2}$/.test(lookback[k+1])) {
+        const moNum=(MONTHS.findIndex(m=>m.toLowerCase()===l.toLowerCase())+1).toString().padStart(2,'0');
+        dateStr=`${moNum}/${lookback[k+1].padStart(2,'0')}`;
+        break;
+      }
+    }
+
+    // Find vendor — first non-skip, non-category, non-date, non-cardnum line looking back
+    for(let k=lookback.length-1; k>=0; k--) {
+      const l = lookback[k];
+      if(!l) continue;
+      if(/^pending$/i.test(l)) continue;
+      if(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)(\s+\d{1,2})?$/i.test(l)) continue;
+      if(/^\d{1,2}$/.test(l)) continue;
+      if(/^1\.25x miles/i.test(l)) continue;
+      if(/timothy h\./i.test(l) || /\.\.\.\d{4}/.test(l)) continue;
+      if(isCapOneCategory(l)) continue;
+      if(isAmount(l)) continue;
+      if(/^(date|description|amount|category|card|details|print|download|view|posted|statement)/i.test(l)) continue;
+      // This looks like a vendor name
+      vendor = l;
+      break;
+    }
+
+    // Skip if no vendor found or it's a payment
+    if(!vendor || /^payment from/i.test(vendor) || /^interest charge/i.test(vendor)) { i++; continue; }
+
+    // Use import year/month as fallback date
+    if(!dateStr) {
+      dateStr = `${(importMo+1).toString().padStart(2,'0')}/??`;
+    }
+
+    const category = autoCategorize(vendor, vendor);
+    parsed.push({ date: dateStr, item: vendor, vendor: vendor, amount, category });
+    i++;
+  }
+
+  // Deduplicate exact same date+vendor+amount combos
+  const seen = new Set();
+  const deduped = parsed.filter(t => {
+    const key = `${t.date}|${t.vendor}|${t.amount}`;
+    if(seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+
+  if(deduped.length===0){
+    document.getElementById('parseMsg').textContent='No transactions found — make sure you copied from Capital One and try again.';
+    return;
+  }
+
+  document.getElementById('parseMsg').textContent=`Found ${deduped.length} transactions — review categories below`;
+  pendingImport = deduped;
+
+  const preview = document.getElementById('parsePreview');
+  preview.style.display='block';
+  document.getElementById('previewTitle').textContent=`Preview — ${deduped.length} transactions. Fix any categories before importing.`;
+
+  renderPreviewList();
+}
+
+function renderPreviewList() {
+  document.getElementById('previewTitle').textContent=`Preview — ${pendingImport.length} transactions. Fix categories or remove any you don't want.`;
+  document.getElementById('previewList').innerHTML=pendingImport.map((t,i)=>`
+    <div class="preview-txn" id="ptxn_${i}">
+      <span class="preview-date">${t.date}</span>
+      <span class="preview-desc">${t.item}</span>
+      <span class="preview-amt ${t.amount<0?'amount-pos':'amount-neg'}">${fmt(t.amount)}</span>
+      <span class="preview-cat">
+        <select class="cat-select" style="width:100%;border-left:3px solid ${getCatColor(t.category)}"
+          onchange="pendingImport[${i}].category=this.value;this.style.borderLeftColor=getCatColor(this.value)">
+          ${getAllCategories().map(c=>`<option value="${c}"${c===t.category?' selected':''}>${c}</option>`).join('')}
+        </select>
+      </span>
+      <button onclick="removePendingTxn(${i})" style="background:none;border:1px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;color:var(--miss);font-size:0.72rem;flex-shrink:0;transition:all 0.15s;" onmouseover="this.style.background='var(--miss-bg)'" onmouseout="this.style.background='none'">✕ Remove</button>
+    </div>`).join('');
+}
+
+function removePendingTxn(idx) {
+  pendingImport.splice(idx, 1);
+  if(pendingImport.length === 0) {
+    document.getElementById('parsePreview').style.display='none';
+    document.getElementById('parseMsg').textContent='All transactions removed.';
+  } else {
+    renderPreviewList();
+    document.getElementById('parseMsg').textContent=`${pendingImport.length} transactions ready to import`;
+  }
+}
+
+function importTransactions() {
+  if(!pendingImport.length) return;
+  const yr=document.getElementById('importYear').value;
+  const mo=+document.getElementById('importMonth').value;
+  const md=getMonthData(yr,mo);
+  const newTxns=pendingImport.map((t,i)=>({...t,id:`imp_${Date.now()}_${i}`}));
+  md.transactions=[...md.transactions,...newTxns];
+  save();
+  flash('importSaved');
+  document.getElementById('parsePreview').style.display='none';
+  document.getElementById('pasteArea').value='';
+  pendingImport=[];
+  document.getElementById('parseMsg').textContent='';
+  // Switch to that month
+  currentYear=yr; currentMonth=mo;
+  buildTabs(); buildMonthBar(yr);
+  renderAll();
+}
+
+function clearPaste() {
+  document.getElementById('pasteArea').value='';
+  document.getElementById('parsePreview').style.display='none';
+  document.getElementById('parseMsg').textContent='';
+  pendingImport=[];
+}
+
+// ── TREND CHART ───────────────────────────────────────────────────────────────
+function renderTrend() {
+  const allMonths=[];
+  ALL_YEARS.forEach(yr=>{
+    for(let m=0;m<12;m++){
+      const md=data[`${yr}-${m}`];
+      if(md?.transactions?.length>0) allMonths.push({label:`${MONTHS[m]} ${yr}`,txns:md.transactions,yr,mo:m});
+    }
+  });
+
+  document.getElementById('trendSubtitle').textContent=`Total spending — all months with data`;
+
+  if(trendChartObj) trendChartObj.destroy();
+  if(allMonths.length<2){ document.getElementById('trendChart').getContext('2d').clearRect(0,0,9999,9999); return; }
+
+  const labels=allMonths.map(m=>m.label);
+  const totals=allMonths.map(m=>getTotalSpend(m.txns));
+
+  trendChartObj=new Chart(document.getElementById('trendChart'),{
+    type:'bar',
+    data:{labels,datasets:[{
+      label:'Total Spend',data:totals,
+      backgroundColor:totals.map((_,i)=>allMonths[i].yr===currentYear&&allMonths[i].mo===currentMonth?'rgba(47,79,79,0.9)':'rgba(47,79,79,0.35)'),
+      borderColor:totals.map((_,i)=>allMonths[i].yr===currentYear&&allMonths[i].mo===currentMonth?'#2f4f4f':'#2f4f4f44'),
+      borderWidth:2, borderRadius:6,
+    }]},
+    options:{responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`Spent: ${fmt(c.raw)}`}}},
+      scales:{x:{ticks:{color:'#8a8f9a',maxRotation:45,font:{size:10}},grid:{color:'#e8e4d8'}},y:{ticks:{color:'#8a8f9a',callback:v=>fmt(v,0),font:{size:10}},grid:{color:'#e8e4d8'}}}
+    }
+  });
+}
+
+// ── HISTORY TABLE ─────────────────────────────────────────────────────────────
+function renderHistory() {
+  const allMonths=[];
+  ALL_YEARS.forEach(yr=>{
+    for(let m=0;m<12;m++){
+      const md=data[`${yr}-${m}`];
+      if(md?.transactions?.length>0){
+        allMonths.push({label:`${MONTHS[m].slice(0,3)} ${yr.slice(2)}`,totals:getCatTotals(md.transactions),total:getTotalSpend(md.transactions)});
+      }
+    }
+  });
+
+  if(allMonths.length===0){ document.getElementById('histTable').innerHTML='<tr><td style="padding:16px;color:var(--text3)">No data yet across any months.</td></tr>'; return; }
+
+  const showCats=getAllCategories().filter(c=>c!=='Income/Refund'&&allMonths.some(m=>(m.totals[c]||0)>0));
+  let html=`<tr><th>Category</th>${allMonths.map(m=>`<th>${m.label}</th>`).join('')}</tr>`;
+  showCats.forEach(cat=>{
+    html+=`<tr><td style="border-left:3px solid ${CAT_COLORS[cat]};padding-left:8px">${cat}</td>
+      ${allMonths.map((m,i)=>{
+        const val=m.totals[cat]||0;
+        const prev=i>0?allMonths[i-1].totals[cat]||0:null;
+        const cls=prev!=null&&val>0?(val>prev?'cell-down':val<prev?'cell-up':''):'';
+        return`<td class="${cls}">${val>0?fmt(val,0):'<span style="color:var(--border)">—</span>'}</td>`;
+      }).join('')}</tr>`;
+  });
+  html+=`<tr class="total-row"><td>Total</td>${allMonths.map(m=>`<td>${fmt(m.total,0)}</td>`).join('')}</tr>`;
+  document.getElementById('histTable').innerHTML=html;
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function flash(id){ const el=document.getElementById(id); el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2500); }
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+function renderCatTags() {
+  const container = document.getElementById('catTags');
+  if(!container) return;
+  const builtinTags = BASE_CATEGORIES.map(c=>`
+    <div class="cat-tag builtin" style="border-color:${CAT_COLORS[c]||'var(--border)'};color:${CAT_COLORS[c]||'var(--text2)'}">
+      ${c} <span style="font-size:0.65rem;color:var(--text3);margin-left:2px">built-in</span>
+    </div>`).join('');
+  const customTags = customCategories.map(c=>`
+    <div class="cat-tag" style="border-color:${c.color};color:${c.color}">
+      <span style="width:8px;height:8px;border-radius:50%;background:${c.color};display:inline-block"></span>
+      ${c.name}
+      <button class="cat-tag-remove" onclick="removeCustomCategory('${c.name}')" title="Remove ${c.name}">✕</button>
+    </div>`).join('');
+  container.innerHTML = builtinTags + customTags;
+}
+
+function addCustomCategory() {
+  const nameEl = document.getElementById('newCatName');
+  const colorEl = document.getElementById('newCatColor');
+  const name = nameEl.value.trim();
+  if(!name){ nameEl.focus(); return; }
+  if(BASE_CATEGORIES.includes(name)||customCategories.find(c=>c.name===name)){
+    alert(`"${name}" already exists.`); return;
+  }
+  customCategories.push({ name, color: colorEl.value });
+  try { localStorage.setItem('custom_categories', JSON.stringify(customCategories)); } catch(e){}
+  nameEl.value = '';
+  renderCatTags();
+  renderBudgetGrid(getMonthData(currentYear,currentMonth).budgets||{});
+  renderAll();
+}
+
+function removeCustomCategory(name) {
+  if(!confirm(`Remove category "${name}"? Any transactions assigned to it will stay but won't match a category.`)) return;
+  customCategories = customCategories.filter(c=>c.name!==name);
+  try { localStorage.setItem('custom_categories', JSON.stringify(customCategories)); } catch(e){}
+  renderCatTags();
+  renderBudgetGrid(getMonthData(currentYear,currentMonth).budgets||{});
+  renderAll();
+}
+
+function init() {
+  // Populate import year/month
+  const yrSel=document.getElementById('importYear');
+  yrSel.innerHTML=ALL_YEARS.map(y=>`<option value="${y}">${y}</option>`).join('');
+  yrSel.value='2026';
+  const moSel=document.getElementById('importMonth');
+  moSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+  moSel.value='4'; // May = next month
+
+  buildTabs();
+  buildMonthBar('2026');
+  renderCatTags();
+  renderAll();
+}
+
+init();
+</script>
+</body>
+</html>
