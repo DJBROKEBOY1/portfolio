@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our FIRE Dashboard</title>
+<style>
+#gate {
+  position:fixed; top:0; left:0; width:100%; height:100%; z-index:99999;
+  background:#120e1e;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Segoe UI',sans-serif;
+}
+#gate::before {
+  content:'';
+  position:absolute; top:-20%; left:-10%; width:60%; height:60%;
+  background:radial-gradient(ellipse,rgba(160,80,255,0.25) 0%,transparent 70%);
+  pointer-events:none;
+}
+#gate::after {
+  content:'';
+  position:absolute; bottom:-20%; right:-10%; width:55%; height:55%;
+  background:radial-gradient(ellipse,rgba(64,208,200,0.2) 0%,transparent 70%);
+  pointer-events:none;
+}
+.gate-box {
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(160,80,255,0.3);
+  border-radius:20px;
+  padding:48px 44px;
+  width:100%;
+  max-width:400px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+  backdrop-filter:blur(20px);
+  box-shadow:0 8px 40px rgba(120,60,220,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.gate-icon { font-size:2.5rem; margin-bottom:16px; }
+.gate-title {
+  font-size:1.4rem; font-weight:800; color:rgba(255,255,255,0.95);
+  margin-bottom:4px; letter-spacing:-0.02em;
+}
+.gate-subtitle {
+  font-size:0.8rem; color:rgba(160,120,255,0.7); margin-bottom:32px;
+  text-transform:uppercase; letter-spacing:0.08em;
+}
+.gate-input {
+  width:100%; background:rgba(255,255,255,0.07);
+  border:1px solid rgba(160,80,255,0.3); border-radius:12px;
+  padding:14px 18px; font-size:1rem; color:rgba(255,255,255,0.9);
+  font-family:'Segoe UI',sans-serif; outline:none; text-align:center;
+  letter-spacing:0.15em; margin-bottom:16px;
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+.gate-input:focus {
+  border-color:rgba(160,80,255,0.7);
+  box-shadow:0 0 0 3px rgba(160,80,255,0.15);
+}
+.gate-input.error {
+  border-color:rgba(255,80,96,0.7);
+  box-shadow:0 0 0 3px rgba(255,80,96,0.15);
+  animation:shake 0.4s ease;
+}
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}
+}
+.gate-btn {
+  width:100%;
+  background:linear-gradient(135deg,rgba(160,80,255,0.5),rgba(64,208,200,0.4));
+  border:1px solid rgba(160,80,255,0.4); border-radius:12px;
+  padding:14px; font-size:0.9rem; font-weight:700;
+  color:rgba(255,255,255,0.95); font-family:'Segoe UI',sans-serif;
+  cursor:pointer; letter-spacing:0.06em; text-transform:uppercase;
+  transition:all 0.2s; box-shadow:0 4px 16px rgba(120,60,220,0.3);
+}
+.gate-btn:hover {
+  background:linear-gradient(135deg,rgba(160,80,255,0.7),rgba(64,208,200,0.6));
+  box-shadow:0 6px 24px rgba(120,60,220,0.5); transform:translateY(-1px);
+}
+.gate-btn:active { transform:translateY(0); }
+.gate-error {
+  font-size:0.75rem; color:rgba(255,100,120,0.9); margin-top:12px;
+  height:18px; font-weight:600; letter-spacing:0.04em;
+}
+</style>
+</head>
+<body>
+
+<!-- Password Gate -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-icon">🔥</div>
+    <div class="gate-title">FIRE Dashboard</div>
+    <div class="gate-subtitle">Private Dashboard</div>
+    <input
+      class="gate-input"
+      id="gateInput"
+      type="password"
+      placeholder="Enter password"
+      onkeydown="if(event.key==='Enter')checkPassword()"
+      autocomplete="current-password"
+    >
+    <button class="gate-btn" onclick="checkPassword()">Unlock Dashboard</button>
+    <div class="gate-error" id="gateError"></div>
+  </div>
+</div>
+
+<script>
+// ── SET YOUR PASSWORD HERE ────────────────────────────────────────────────────
+const DASHBOARD_PASSWORD = "changeme123";
+// ─────────────────────────────────────────────────────────────────────────────
+
+if (sessionStorage.getItem('fire_unlocked') === 'true') {
+  document.getElementById('gate').style.display = 'none';
+}
+
+function checkPassword() {
+  const input = document.getElementById('gateInput');
+  const error = document.getElementById('gateError');
+  if (input.value === DASHBOARD_PASSWORD) {
+    sessionStorage.setItem('fire_unlocked', 'true');
+    document.getElementById('gate').style.display = 'none';
+    error.textContent = '';
+  } else {
+    input.classList.remove('error');
+    void input.offsetWidth;
+    input.classList.add('error');
+    error.textContent = 'Incorrect password — try again';
+    input.value = '';
+    input.focus();
+    setTimeout(() => input.classList.remove('error'), 500);
+  }
+}
+</script>
+
+<title>Our FIRE Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#f0ede4; --bg2:#e8e4d8; --panel:#ffffff; --panel2:#f7f4ed; --border:#ddd9cc;
+  --teal:#2f4f4f; --slate:#708099; --cream:#f5f5dc; --mint:#a0c4b8; --sky:#87ceeb; --sky2:#5fb8e0;
+  --text:#2a2a2a; --text2:#555e6b; --text3:#8a8f9a;
+  --hit:#2f7a5a; --hit-bg:#e6f4ee; --close:#a05a1a; --close-bg:#fef3e2; --miss:#8b2233; --miss-bg:#fde8ec;
+  --porsche:#b85c20; --porsche-bg:#fdf0e8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:24px;}
+.header{background:linear-gradient(135deg,var(--teal) 0%,#3d6b6b 50%,var(--slate) 100%);border-radius:20px;padding:26px 30px;margin-bottom:20px;color:white;box-shadow:0 8px 28px rgba(47,79,79,0.25);}
+.header h1{font-size:1.6rem;font-weight:800;color:var(--cream);margin-bottom:5px;}
+.header p{font-size:0.85rem;color:rgba(245,245,220,0.75);}
+.panel{background:var(--panel);border-radius:18px;padding:22px;margin-bottom:18px;border:1px solid var(--border);box-shadow:0 2px 16px rgba(47,79,79,0.08);}
+.panel h2{font-size:0.95rem;font-weight:700;color:var(--teal);margin-bottom:4px;}
+.panel-desc{font-size:0.75rem;color:var(--text3);margin-bottom:16px;line-height:1.55;}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.stat-card{background:var(--panel);border-radius:16px;padding:16px 18px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(47,79,79,0.07);}
+.stat-label{font-size:0.68rem;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;}
+.stat-value{font-size:1.45rem;font-weight:900;margin-bottom:2px;}
+.stat-sub{font-size:0.67rem;color:var(--text3);}
+.stat-bar{height:5px;border-radius:999px;margin-top:8px;background:var(--bg2);overflow:hidden;}
+.stat-bar-fill{height:100%;border-radius:999px;}
+.slider-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.slider-group label{display:block;font-size:0.75rem;color:var(--teal);font-weight:700;margin-bottom:4px;}
+.slider-group .value{font-size:1.1rem;font-weight:800;color:var(--text);}
+.slider-group .hint{font-size:0.67rem;color:var(--text3);margin-top:3px;}
+input[type=range]{width:100%;accent-color:var(--teal);margin-top:5px;cursor:pointer;}
+.inflation-note{font-size:0.7rem;color:var(--text3);margin-top:4px;}
+.inflation-note.active{color:#c07020;font-weight:600;}
+.pill{display:inline-block;background:var(--bg2);color:var(--teal);border-radius:20px;padding:2px 10px;font-size:0.67rem;font-weight:700;margin-left:6px;vertical-align:middle;border:1px solid var(--border);}
+.pill.on{background:#fef3e2;color:#c07020;border-color:#e8c070;}
+/* Purchase */
+.purchase-panel{background:var(--porsche-bg);border-radius:18px;padding:22px;margin-bottom:18px;border:2px solid #e8b898;box-shadow:0 2px 16px rgba(184,92,32,0.1);}
+.purchase-panel h2{font-size:0.95rem;font-weight:700;color:var(--porsche);margin-bottom:4px;}
+.purchase-panel .panel-desc{color:#7a4820;}
+.purchase-slider-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;}
+.purchase-slider-grid .slider-group label{color:var(--porsche);}
+.purchase-slider-grid input[type=range]{accent-color:var(--porsche);}
+.purchase-impact{margin-top:18px;background:white;border-radius:12px;padding:16px;border:1px solid #e8b898;}
+.purchase-impact h3{font-size:0.82rem;font-weight:700;color:var(--porsche);margin-bottom:12px;}
+.impact-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.impact-card{background:var(--porsche-bg);border-radius:10px;padding:10px 12px;border:1px solid #e8b898;text-align:center;}
+.ic-name{font-size:0.67rem;color:#7a4820;margin-bottom:4px;font-weight:600;}
+.ic-delay{font-size:1.1rem;font-weight:900;color:var(--porsche);margin-bottom:2px;}
+.ic-ages{font-size:0.65rem;color:#7a4820;}
+.impact-card.no-impact{background:var(--hit-bg);border-color:var(--mint);}
+.impact-card.no-impact .ic-delay{color:var(--hit);}
+.impact-card.no-impact .ic-name,.impact-card.no-impact .ic-ages{color:var(--hit);}
+/* Progress bars */
+.goal-row{margin-bottom:20px;}.goal-row:last-child{margin-bottom:0;}
+.goal-row-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;margin-bottom:5px;}
+.goal-row-name{font-size:0.83rem;font-weight:800;}
+.goal-row-sub{font-size:0.68rem;color:var(--text3);margin-bottom:5px;}
+.goal-row-nums{font-size:0.72rem;color:var(--text3);text-align:right;line-height:1.5;}
+.goal-row-nums strong{color:var(--text);}
+.track{background:var(--bg2);border-radius:999px;height:9px;overflow:hidden;margin-bottom:3px;}
+.fill{height:100%;border-radius:999px;transition:width 0.4s ease;}
+.goal-legend{font-size:0.67rem;color:var(--text3);display:flex;justify-content:space-between;margin-top:3px;}
+.gap-callout{background:#fff8f0;border-left:3px solid var(--close);border-radius:0 8px 8px 0;padding:8px 12px;font-size:0.72rem;color:#7a4010;margin-top:7px;line-height:1.55;}
+.gap-callout strong{color:var(--close);}
+.on-track-callout{background:var(--hit-bg);border-left:3px solid var(--hit);border-radius:0 8px 8px 0;padding:8px 12px;font-size:0.72rem;color:#1a5e3a;margin-top:7px;}
+.on-track-callout strong{color:var(--hit);}
+/* Cards */
+.scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px;}
+.card{background:var(--panel);border-radius:18px;border:2px solid var(--border);box-shadow:0 3px 16px rgba(47,79,79,0.08);overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(47,79,79,0.15);}
+.card.hit{border-color:var(--mint);}.card.close{border-color:#e8b86d;}.card.miss{border-color:#e08090;}
+.card-header{padding:14px 16px;display:flex;align-items:center;gap:10px;}
+.card-header .emoji{font-size:1.6rem;}
+.card-scenario-label{font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:rgba(255,255,255,0.8);}
+.card-name{font-size:0.98rem;font-weight:900;color:white;line-height:1.2;}
+.card-sub{font-size:0.66rem;color:rgba(255,255,255,0.7);margin-top:1px;}
+.card-body{padding:14px 16px;}
+.card-body-label{font-size:0.7rem;color:var(--text3);margin-bottom:2px;}
+.card-age{font-size:2.2rem;font-weight:900;line-height:1;margin:6px 0 2px;}
+.card-age.hit{color:var(--hit);}.card-age.close{color:var(--close);}.card-age.miss{color:var(--miss);}
+.card-age-sub{font-size:0.68rem;color:var(--text3);margin-bottom:10px;}
+.card-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.chip{background:var(--panel2);border-radius:8px;padding:4px 9px;font-size:0.67rem;color:var(--text3);line-height:1.4;border:1px solid var(--border);}
+.chip span{color:var(--text);font-weight:700;display:block;font-size:0.74rem;}
+.chip.eta{border-color:var(--teal);}.chip.eta span{color:var(--teal);}
+.chip.porsche-chip{border-color:var(--porsche);background:var(--porsche-bg);}.chip.porsche-chip span{color:var(--porsche);}
+.chip.longevity-chip{border-color:var(--slate);background:#f0f4f8;}.chip.longevity-chip span{color:var(--slate);}
+.swr-wrap{margin-bottom:10px;}
+.swr-label-row{display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text3);margin-bottom:3px;}
+.swr-track{background:var(--bg2);border-radius:999px;height:6px;overflow:hidden;}
+.swr-fill{height:100%;border-radius:999px;}
+.swr-ticks{display:flex;justify-content:space-between;font-size:0.58rem;color:var(--border);margin-top:2px;}
+.status-box{background:var(--panel2);border-radius:10px;padding:8px 11px;font-size:0.71rem;color:var(--text2);margin-bottom:10px;line-height:1.5;border:1px solid var(--border);}
+.badge{display:inline-block;padding:5px 13px;border-radius:999px;font-size:0.7rem;font-weight:700;}
+.badge.hit{background:var(--hit-bg);color:var(--hit);}.badge.close{background:var(--close-bg);color:var(--close);}.badge.miss{background:var(--miss-bg);color:var(--miss);}
+/* Savings Rate */
+.sr-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.sr-card{background:var(--panel2);border-radius:12px;padding:14px;border:1px solid var(--border);text-align:center;}
+.sr-ring{position:relative;width:60px;height:60px;margin:0 auto 8px;}
+.sr-ring svg{transform:rotate(-90deg);}
+.ring-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:0.75rem;font-weight:800;}
+.sr-label{font-size:0.7rem;color:var(--text2);font-weight:700;margin-bottom:2px;}
+.sr-sub{font-size:0.63rem;color:var(--text3);}
+/* Coast */
+.coast-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.coast-card{background:var(--panel2);border-radius:14px;padding:16px;border:1px solid var(--border);}
+.coast-card.coasted{border-color:var(--mint);background:#f0f9f5;}
+.coast-card-name{font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;}
+.coast-number{font-size:1.3rem;font-weight:900;margin-bottom:2px;}
+.coast-sublabel{font-size:0.67rem;color:var(--text3);margin-bottom:8px;}
+.coast-badge{display:inline-block;font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:999px;margin-bottom:8px;}
+.coast-badge.yes{background:var(--hit-bg);color:var(--hit);}.coast-badge.no{background:#e8f0f8;color:var(--slate);}
+.coast-detail{font-size:0.71rem;color:var(--text2);line-height:1.6;margin-bottom:10px;}
+.coast-detail strong{color:var(--text);}
+.coast-bar-labels{display:flex;justify-content:space-between;font-size:0.65rem;color:var(--text3);margin-bottom:3px;}
+.coast-bar-track{background:var(--bg2);border-radius:999px;height:6px;overflow:hidden;}
+.coast-bar-fill{height:100%;border-radius:999px;transition:width 0.4s;}
+/* Monte Carlo */
+.mc-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.mc-card{background:var(--panel2);border-radius:12px;padding:14px;border:1px solid var(--border);text-align:center;}
+.mc-pct{font-size:1.6rem;font-weight:900;margin-bottom:2px;}
+.mc-label{font-size:0.67rem;color:var(--text3);}
+.mc-sub{font-size:0.63rem;color:var(--text3);margin-top:4px;}
+/* Longevity */
+.longevity-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;}
+.lon-card{background:var(--panel2);border-radius:12px;padding:12px 14px;border:1px solid var(--border);text-align:center;}
+.lon-card.never-runs-out{border-color:var(--mint);background:var(--hit-bg);}
+.lon-label{font-size:0.67rem;color:var(--text3);margin-bottom:4px;font-weight:600;}
+.lon-years{font-size:1.5rem;font-weight:900;margin-bottom:2px;}
+.lon-sub{font-size:0.63rem;color:var(--text3);}
+.chart-subtitle{font-size:0.7rem;color:var(--text3);margin-bottom:14px;}
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:0.78rem;}
+th{text-align:left;color:var(--teal);font-weight:700;padding:10px 8px;border-bottom:2px solid var(--border);}
+td{padding:9px 8px;border-bottom:1px solid var(--bg2);color:var(--text2);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--panel2);}
+.tg{color:var(--hit);font-weight:700;}.ty{color:var(--close);font-weight:700;}.tr{color:var(--miss);font-weight:700;}.tb{color:var(--slate);font-weight:700;}
+@media(max-width:700px){
+  .slider-grid,.sr-grid,.mc-summary,.purchase-slider-grid{grid-template-columns:1fr 1fr;}
+  .scenarios,.coast-grid,.stat-row,.impact-grid,.longevity-summary{grid-template-columns:1fr;}
+  table{font-size:0.66rem;}th,td{padding:6px 5px;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔥 Our FIRE Dashboard</h1>
+  <p>Retirement planning across 5 lifestyle scenarios — adjust any slider and everything updates live</p>
+</div>
+
+<div class="stat-row" id="statRow"></div>
+
+<div class="panel">
+  <h2>⚙️ Our Numbers</h2>
+  <p class="panel-desc">These are our key inputs. Move any slider and the entire dashboard recalculates instantly.</p>
+  <div class="slider-grid">
+    <div class="slider-group"><label>Monthly Contribution</label><div class="value" id="contribVal">$3,000</div><input type="range" id="contrib" min="500" max="10000" step="250" value="3000"><div class="hint">How much we invest each month</div></div>
+    <div class="slider-group"><label>Current Portfolio Value</label><div class="value" id="portfolioVal">$426,000</div><input type="range" id="portfolio" min="100000" max="1000000" step="10000" value="426000"><div class="hint">Total invested today (ETFs, 401k, etc.)</div></div>
+    <div class="slider-group"><label>Monthly Household Income</label><div class="value" id="incomeVal">$12,000</div><input type="range" id="income" min="3000" max="30000" step="500" value="12000"><div class="hint">Used to calculate your savings rate</div></div>
+    <div class="slider-group"><label>Expected Annual Return (Nominal)</label><div class="value" id="returnVal">8.0%</div><input type="range" id="returnRate" min="5" max="12" step="0.5" value="8"><div class="hint">S&amp;P 500 avg ≈ 10%, ETF blend ≈ 7–9%</div></div>
+    <div class="slider-group"><label>Inflation Rate <span id="inflationBadge" class="pill">OFF</span></label><div class="value" id="inflationVal" style="color:var(--text3)">0.0%</div><input type="range" id="inflationRate" min="0" max="5" step="0.5" value="0"><div class="inflation-note" id="inflationNote">Standard is 3% — drag to adjust for rising prices</div></div>
+    <div class="slider-group"><label>Your Current Age</label><div class="value" id="ageVal">32</div><input type="range" id="age" min="22" max="55" step="1" value="32"></div>
+    <div class="slider-group"><label>Wife's Current Age</label><div class="value" id="wifeAgeVal">29</div><input type="range" id="wifeAge" min="22" max="55" step="1" value="29"></div>
+    <div class="slider-group"><label>Target Retirement Age (You)</label><div class="value" id="retireAgeVal">55</div><input type="range" id="retireAge" min="40" max="70" step="1" value="55"><div class="hint">Goal: 55, flexibility up to 62</div></div>
+  </div>
+</div>
+
+<div class="purchase-panel">
+  <h2>🚗 Big Purchase Planner — Wife's Dream Porsche</h2>
+  <p class="panel-desc">Model a one-time large purchase and see exactly how many months it delays retirement across all 5 scenarios.</p>
+  <div class="purchase-slider-grid">
+    <div class="slider-group"><label>Purchase Amount</label><div class="value" id="purchaseAmtVal" style="color:var(--porsche)">$40,000</div><input type="range" id="purchaseAmt" min="0" max="200000" step="5000" value="40000"><div class="hint">Set to $0 to see baseline (no purchase)</div></div>
+    <div class="slider-group"><label>Purchase at Age (You)</label><div class="value" id="purchaseAgeVal" style="color:var(--porsche)">35</div><input type="range" id="purchaseAge" min="25" max="60" step="1" value="35"><div class="hint">What age do you make the purchase?</div></div>
+    <div class="slider-group"><label>Paying from</label><div class="value" id="purchaseSourceVal" style="color:var(--porsche);font-size:0.9rem">Portfolio</div><input type="range" id="purchaseSource" min="0" max="1" step="1" value="0"><div class="hint">0 = from portfolio &nbsp;·&nbsp; 1 = from savings (reduces contributions for 1 yr)</div></div>
+  </div>
+  <div class="purchase-impact">
+    <h3>🚗 Porsche Impact — Retirement Delay Per Scenario</h3>
+    <div class="impact-grid" id="impactGrid"></div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>📍 How Far Along Are We? <span id="inflationModeLabel" style="font-weight:400;font-size:0.72rem;color:var(--text3)"></span></h2>
+  <p class="panel-desc">The <strong>faded bar</strong> = today. The <strong>solid bar</strong> = projected at retirement age. If there's a gap, we explain what it means and how to close it.</p>
+  <div id="goalBars"></div>
+</div>
+
+<div class="scenarios" id="scenarioCards"></div>
+
+<div class="panel">
+  <h2>💰 Savings Rate Tracker</h2>
+  <p class="panel-desc">Your savings rate is the single biggest lever in FIRE planning — more impactful than investment returns. Most FIRE practitioners aim for 40–60%+.</p>
+  <div class="sr-grid" id="srGrid"></div>
+</div>
+
+<div class="panel">
+  <h2>🌊 Coast FIRE — When Can We Stop Investing?</h2>
+  <p class="panel-desc"><strong>Coast FIRE</strong> is the point where your portfolio is big enough to grow to your retirement goal entirely on its own. Like a snowball at the top of a hill: once it's big enough, it rolls down without you pushing.</p>
+  <div class="coast-grid" id="coastCards"></div>
+</div>
+
+<div class="panel">
+  <h2>🎲 Monte Carlo Simulation <span style="font-weight:400;font-size:0.75rem;color:var(--text3)">— 500 simulated futures</span></h2>
+  <p class="panel-desc">500 randomized market simulations using real historical volatility (±15% annual variance). Shows the realistic range of outcomes and the probability each scenario is fully funded by retirement age.</p>
+  <div class="mc-summary" id="mcSummary"></div>
+  <canvas id="mcChart" height="80"></canvas>
+</div>
+
+<div class="panel">
+  <h2>📈 Portfolio Growth Over Time <span id="chartInflationNote" class="pill">Nominal</span></h2>
+  <p class="chart-subtitle">Solid = portfolio growth &nbsp;·&nbsp; Dashed = FIRE targets</p>
+  <canvas id="growthChart" height="90"></canvas>
+</div>
+
+<!-- Longevity Panel -->
+<div class="panel">
+  <h2>⏳ Portfolio Longevity — How Long Does the Money Last?</h2>
+  <p class="panel-desc">Starting from your projected portfolio at retirement, this shows how long each scenario's money lasts at its withdrawal rate. <strong>Solid lines</strong> assume 6% annual growth in retirement (realistic — your portfolio keeps growing even while withdrawing). <strong>Dashed lines</strong> assume 0% growth (worst case pure drawdown). The point where a line hits $0 is when the money runs out. "∞" means the portfolio grows faster than you spend it — it never runs out!</p>
+  <div class="longevity-summary" id="longevitySummary"></div>
+  <canvas id="longevityChart" height="100"></canvas>
+</div>
+
+<div class="panel">
+  <h2>📋 Full Scenario Comparison</h2>
+  <p class="panel-desc">All 5 scenarios — goals, coast numbers, retire ages, Porsche delay, longevity, and Monte Carlo success rates.</p>
+  <table id="summaryTable"></table>
+</div>
+
+<script>
+const SCENARIOS = [
+  {id:1,name:"The Beyoncé", sub:"$40k luxury travel + expenses",spend:165000,mult:21,swr:"4.7%",emoji:"👑",grad:"linear-gradient(135deg,#2f4f4f,#3d6b6b)",color:"#2f4f4f"},
+  {id:2,name:"The Ella Mai",sub:"$25k travel + yearly expenses", spend:150000,mult:25,swr:"4.0%",emoji:"🎶",grad:"linear-gradient(135deg,#708099,#8a9ab5)",color:"#708099"},
+  {id:3,name:"The Kehlani", sub:"Yearly expenses only",          spend:125000,mult:25,swr:"4.0%",emoji:"🌸",grad:"linear-gradient(135deg,#5fb8e0,#87ceeb)",color:"#3a9ec4"},
+  {id:4,name:"The Rihanna", sub:"Lean spend, aggressive rate",   spend:100000,mult:21,swr:"4.7%",emoji:"💎",grad:"linear-gradient(135deg,#a0c4b8,#70b0a0)",color:"#3a8a72"},
+  {id:5,name:"The SZA",     sub:"Lean spend, conservative",      spend:100000,mult:25,swr:"4.0%",emoji:"🌿",grad:"linear-gradient(135deg,#708099,#5a7090)",color:"#506080"},
+];
+const ACCENTS=["#2f4f4f","#708099","#3a9ec4","#3a8a72","#a07040"];
+
+function calcYearsToTarget(start,monthly,rate,target,purchaseAmt,purchaseAgeYrs,currentAge,fromPortfolio){
+  const r=rate/100/12;
+  const pm=Math.max(0,Math.round((purchaseAgeYrs-currentAge)*12));
+  let p=start;
+  for(let m=0;m<=720;m++){
+    if(p>=target) return m/12;
+    if(fromPortfolio&&m===pm&&purchaseAmt>0) p=Math.max(0,p-purchaseAmt);
+    p=p*(1+r)+monthly;
+    if(!fromPortfolio&&purchaseAmt>0&&m>=pm&&m<pm+12) p-=(purchaseAmt/12);
+  }
+  return null;
+}
+function calcCoastNumber(target,rate,years){if(years<=0)return target;return target/Math.pow(1+rate/100,years);}
+function calcYearsToCoast(start,monthly,rate,target,ytr){
+  const r=rate/100/12,rA=rate/100;let p=start;
+  for(let m=0;m<=ytr*12;m++){
+    const yL=ytr-m/12;if(yL<=0)return null;
+    if(p>=target/Math.pow(1+rA,yL))return m/12;
+    p=p*(1+r)+monthly;
+  }return null;
+}
+function runMonteCarlo(start,monthly,nomRate,years,target,purchaseAmt,purchaseAgeYrs,currentAge,fromPortfolio,N=500){
+  const mean=nomRate/100,std=0.15;
+  const pm=Math.max(0,Math.round((purchaseAgeYrs-currentAge)*12));
+  let wins=0;const finals=[];
+  for(let i=0;i<N;i++){
+    let p=start;
+    for(let y=0;y<years;y++){
+      const u1=Math.random(),u2=Math.random();
+      const z=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+      if(fromPortfolio&&y*12<=pm&&(y+1)*12>pm) p=Math.max(0,p-purchaseAmt);
+      p=p*(1+mean+std*z)+monthly*12;
+    }
+    finals.push(p);if(p>=target)wins++;
+  }
+  finals.sort((a,b)=>a-b);
+  return{rate:(wins/N*100).toFixed(0),p10:finals[Math.floor(N*.10)],p25:finals[Math.floor(N*.25)],p50:finals[Math.floor(N*.50)],p75:finals[Math.floor(N*.75)],p90:finals[Math.floor(N*.90)]};
+}
+// Returns years until portfolio hits 0, or null if it never does
+function calcLongevity(portfolioAtRetire,annualSpend,growthRate){
+  const r=growthRate/100/12;
+  const ms=annualSpend/12;
+  let p=portfolioAtRetire;
+  for(let m=0;m<=1200;m++){
+    if(p<=0)return m/12;
+    p=p*(1+r)-ms;
+  }
+  return null; // never runs out
+}
+function fmt(n){if(n==null||isNaN(n))return'—';if(n<0)return'-'+fmt(-n);return n>=1e6?'$'+(n/1e6).toFixed(2)+'M':'$'+Math.round(n).toLocaleString();}
+function srColor(p){return p>=50?'#2f7a5a':p>=30?'#3a9ec4':p>=15?'#a07040':'#8b2233';}
+function mcColor(p){const n=+p;return n>=80?'#2f7a5a':n>=60?'#3a9ec4':n>=40?'#a07040':'#8b2233';}
+function lonColor(y){if(y===null)return'var(--hit)';if(y>=40)return'var(--hit)';if(y>=25)return'var(--teal)';if(y>=15)return'var(--close)';return'var(--miss)';}
+
+let gChart=null,mcChartObj=null,lonChart=null;
+
+function update(){
+  const contrib=+document.getElementById('contrib').value;
+  const start=+document.getElementById('portfolio').value;
+  const income=+document.getElementById('income').value;
+  const nom=+document.getElementById('returnRate').value;
+  const inf=+document.getElementById('inflationRate').value;
+  const age=+document.getElementById('age').value;
+  const wAge=+document.getElementById('wifeAge').value;
+  const retAge=+document.getElementById('retireAge').value;
+  const purchaseAmt=+document.getElementById('purchaseAmt').value;
+  const purchaseAge=+document.getElementById('purchaseAge').value;
+  const purchaseSrc=+document.getElementById('purchaseSource').value;
+  const fromPortfolio=purchaseSrc===0;
+  const ytr=Math.max(1,retAge-age);
+  const eff=nom-inf;
+  const infOn=inf>0;
+  const sr=Math.min(contrib/income*100,100);
+
+  document.getElementById('contribVal').textContent='$'+contrib.toLocaleString();
+  document.getElementById('portfolioVal').textContent='$'+start.toLocaleString();
+  document.getElementById('incomeVal').textContent='$'+income.toLocaleString();
+  document.getElementById('returnVal').textContent=nom.toFixed(1)+'%';
+  document.getElementById('ageVal').textContent=age;
+  document.getElementById('wifeAgeVal').textContent=wAge;
+  document.getElementById('retireAgeVal').textContent=retAge+' (in '+ytr+' yrs)';
+  document.getElementById('inflationVal').textContent=inf.toFixed(1)+'%';
+  document.getElementById('inflationVal').style.color=infOn?'#c07020':'var(--text3)';
+  document.getElementById('inflationBadge').textContent=infOn?inf.toFixed(1)+'% ON':'OFF';
+  document.getElementById('inflationBadge').className='pill'+(infOn?' on':'');
+  document.getElementById('inflationNote').textContent=infOn?`Real return: ${eff.toFixed(1)}% (${nom}% − ${inf}% inflation)`:'Standard is 3% — drag to adjust for rising prices';
+  document.getElementById('inflationNote').className='inflation-note'+(infOn?' active':'');
+  document.getElementById('chartInflationNote').textContent=infOn?`Real (${eff.toFixed(1)}%)`:'Nominal';
+  document.getElementById('chartInflationNote').className='pill'+(infOn?' on':'');
+  document.getElementById('inflationModeLabel').textContent=infOn?`— using ${eff.toFixed(1)}% real return`:'— nominal (no inflation adjustment)';
+  document.getElementById('purchaseAmtVal').textContent=purchaseAmt===0?'$0 (off)':'$'+purchaseAmt.toLocaleString();
+  document.getElementById('purchaseAgeVal').textContent=purchaseAge+' (in '+(purchaseAge-age)+' yrs)';
+  document.getElementById('purchaseSourceVal').textContent=fromPortfolio?'Portfolio':'Savings (reduce contrib)';
+
+  const r=eff/100/12;
+  const purchaseMonth=Math.max(0,Math.round((purchaseAge-age)*12));
+
+  let proj=start;
+  for(let m=0;m<ytr*12;m++){
+    if(fromPortfolio&&m===purchaseMonth&&purchaseAmt>0) proj=Math.max(0,proj-purchaseAmt);
+    proj=proj*(1+r)+contrib;
+    if(!fromPortfolio&&purchaseAmt>0&&m>=purchaseMonth&&m<purchaseMonth+12) proj-=(purchaseAmt/12);
+  }
+  let projBase=start;
+  for(let m=0;m<ytr*12;m++) projBase=projBase*(1+r)+contrib;
+  const growth=projBase-start-contrib*ytr*12;
+
+  // Stat Row
+  document.getElementById('statRow').innerHTML=[
+    {label:'Current Portfolio',value:fmt(start),sub:'Total invested today',pct:Math.min(start/3e6*100,100),color:'#2f4f4f'},
+    {label:`Projected at Age ${retAge}`,value:fmt(projBase),sub:`Your ${retAge} · Wife's ${wAge+ytr}`,pct:Math.min(projBase/4e6*100,100),color:'#3a9ec4'},
+    {label:'Savings Rate',value:sr.toFixed(0)+'%',sub:`${fmt(contrib)}/mo of ${fmt(income)}`,pct:sr,color:srColor(sr)},
+    {label:'Investment Growth',value:fmt(growth),sub:'Returns above contributions',pct:Math.min(growth/2e6*100,100),color:'#3a8a72'},
+  ].map(c=>`<div class="stat-card"><div class="stat-label">${c.label}</div><div class="stat-value" style="color:${c.color}">${c.value}</div><div class="stat-sub">${c.sub}</div><div class="stat-bar"><div class="stat-bar-fill" style="width:${c.pct.toFixed(0)}%;background:${c.color}"></div></div></div>`).join('');
+
+  // Compute results
+  const results=SCENARIOS.map((s,i)=>{
+    const target=s.spend*s.mult;
+    const yearsBase=calcYearsToTarget(start,contrib,eff,target,0,purchaseAge,age,true);
+    const rAgeBase=yearsBase!==null?age+yearsBase:null;
+    const yearsWith=purchaseAmt>0?calcYearsToTarget(start,contrib,eff,target,purchaseAmt,purchaseAge,age,fromPortfolio):yearsBase;
+    const rAgeWith=yearsWith!==null?age+yearsWith:null;
+    const wrAgeWith=yearsWith!==null?wAge+yearsWith:null;
+    const delayMonths=(yearsBase!==null&&yearsWith!==null)?Math.round((yearsWith-yearsBase)*12):null;
+    const swrN=parseFloat(s.swr);
+    const inc2=proj*(swrN/100);
+    const annualWithdrawal=proj*(swrN/100);
+    const funded=Math.min(proj/target*100,100);
+    const today=Math.min(start/target*100,100);
+    const coastNum=calcCoastNumber(target,eff,ytr);
+    const coasted=start>=coastNum;
+    const ytc=coasted?0:calcYearsToCoast(start,contrib,eff,target,ytr);
+    const cAge=coasted?age:(ytc!==null?age+ytc:null);
+    const coastPct=Math.min(start/coastNum*100,100);
+    const mc=runMonteCarlo(start,contrib,nom,ytr,target,purchaseAmt,purchaseAge,age,fromPortfolio);
+    // Longevity
+    const lonReal=calcLongevity(proj,annualWithdrawal,6);
+    const lonPess=calcLongevity(proj,annualWithdrawal,0);
+    const lonRetireAge=rAgeWith||retAge;
+    return{...s,accent:ACCENTS[i],target,yearsBase,rAgeBase,yearsWith,rAgeWith,wrAgeWith,delayMonths,inc2,annualWithdrawal,funded,today,proj,coastNum,coasted,ytc,cAge,coastPct,mc,lonReal,lonPess,lonRetireAge};
+  });
+
+  // Impact Grid
+  document.getElementById('impactGrid').innerHTML=results.map(r=>{
+    const noImpact=!purchaseAmt||r.delayMonths===0;
+    const delayTxt=r.delayMonths===null?'N/A':r.delayMonths===0?'No delay! 🎉':`+${r.delayMonths} months`;
+    const beforeAge=r.rAgeBase!==null?r.rAgeBase.toFixed(1):'—';
+    const afterAge=r.rAgeWith!==null?r.rAgeWith.toFixed(1):'—';
+    return`<div class="impact-card ${noImpact?'no-impact':''}"><div class="ic-name">${r.emoji} ${r.name.replace('The ','')}</div><div class="ic-delay">${delayTxt}</div><div class="ic-ages">${purchaseAmt>0?`${beforeAge} → ${afterAge}`:`Retire at ${beforeAge}`}</div></div>`;
+  }).join('');
+
+  // Progress Bars
+  document.getElementById('goalBars').innerHTML=results.map(r=>{
+    const ok=r.proj>=r.target,sf=r.target-r.proj;
+    const callout=ok
+      ?`<div class="on-track-callout">✅ <strong>On track!</strong> We'll fully fund <strong>${r.name}</strong> (${fmt(r.target)}) before age ${retAge}.</div>`
+      :`<div class="gap-callout">⚠️ <strong>What's the gap?</strong> We're on track to reach ~<strong>${fmt(Math.round(r.proj))}</strong>, but <strong>${r.name}</strong> requires <strong>${fmt(r.target)}</strong> — a <strong>${fmt(sf)} shortfall</strong>. To close it: increase contributions, push retirement age out, or pick a more conservative scenario.</div>`;
+    return`<div class="goal-row"><div class="goal-row-top"><div><div class="goal-row-name" style="color:${r.accent}">${r.emoji} ${r.name}</div><div class="goal-row-sub">${r.sub}</div></div><div class="goal-row-nums">Today: <strong>${fmt(start)}</strong><br>Goal: <strong>${fmt(r.target)}</strong></div></div><div class="track"><div class="fill" style="width:${r.today.toFixed(1)}%;background:${r.accent};opacity:0.25"></div></div><div class="track"><div class="fill" style="width:${r.funded.toFixed(1)}%;background:${r.accent}"></div></div><div class="goal-legend"><span>Faded = today (${r.today.toFixed(0)}%) · Solid = at age ${retAge} (${r.funded.toFixed(0)}%)</span></div>${callout}</div>`;
+  }).join('');
+
+  // Scenario Cards
+  document.getElementById('scenarioCards').innerHTML=results.map(r=>{
+    const a=r.rAgeWith;
+    const cls=a!==null&&a<=retAge?'hit':a!==null&&a<=retAge+7?'close':'miss';
+    const badge=cls==='hit'?`✅ On time by ${retAge}`:cls==='close'?'⚠️ Almost there':'❌ Needs more time';
+    const swrN=parseFloat(r.swr),swrCol=swrN>=4.5?'#a07040':'#3a8a72',swrW=Math.min(swrN/6*100,100).toFixed(1);
+    const ok=r.proj>=r.target;
+    const etaYrs=r.yearsWith!==null?r.yearsWith.toFixed(1):null;
+    const etaYr=r.yearsWith!==null?new Date().getFullYear()+Math.ceil(r.yearsWith):null;
+    const delayTxt=purchaseAmt>0&&r.delayMonths!==null&&r.delayMonths>0?`+${r.delayMonths}mo`:purchaseAmt>0?'No delay':null;
+    const lonTxt=r.lonReal===null?'∞ forever':`~${r.lonReal.toFixed(0)} yrs (age ${(r.lonRetireAge+r.lonReal).toFixed(0)})`;
+    return`<div class="card ${cls}">
+      <div class="card-header" style="background:${r.grad}"><div class="emoji">${r.emoji}</div><div><div class="card-scenario-label">Scenario ${r.id}</div><div class="card-name">${r.name}</div><div class="card-sub">${r.sub}</div></div></div>
+      <div class="card-body">
+        <div class="card-body-label">Goal &amp; withdrawal rate</div>
+        <div style="font-size:0.8rem;font-weight:700;color:var(--text);margin-bottom:8px">${fmt(r.target)} @ <span style="color:${swrCol}">${r.swr}</span></div>
+        <div class="swr-wrap"><div class="swr-label-row"><span>How aggressive is this rate?</span><span style="color:${swrCol};font-weight:700">${r.swr}</span></div><div class="swr-track"><div class="swr-fill" style="width:${swrW}%;background:${swrCol}"></div></div><div class="swr-ticks"><span>3% safe</span><span>4%</span><span>4.7%</span><span>6%</span></div></div>
+        <div class="card-age ${cls}">${a!==null?a.toFixed(1):'N/A'}</div>
+        <div class="card-age-sub">Your retire age &nbsp;·&nbsp; Wife: ${r.wrAgeWith!==null?r.wrAgeWith.toFixed(1):'N/A'}</div>
+        <div class="card-chips">
+          <div class="chip eta"><div>ETA</div><span>${etaYrs!==null?etaYrs+' yrs':'N/A'}</span></div>
+          <div class="chip eta"><div>Est. Year</div><span>${etaYr!==null?etaYr:'N/A'}</span></div>
+          <div class="chip"><div>Annual spend</div><span>$${(r.spend/1000).toFixed(0)}k</span></div>
+          <div class="chip"><div>Monthly spend</div><span>$${Math.round(r.spend/12).toLocaleString()}</span></div>
+          <div class="chip"><div>Monthly withdrawal</div><span>$${Math.round(r.inc2/12).toLocaleString()}</span></div>
+          <div class="chip longevity-chip"><div>💰 Lasts</div><span style="color:${lonColor(r.lonReal)}">${lonTxt}</span></div>
+          ${delayTxt?`<div class="chip porsche-chip"><div>🚗 Porsche</div><span>${delayTxt}</span></div>`:''}
+          <div class="chip"><div>MC Success</div><span style="color:${mcColor(r.mc.rate)}">${r.mc.rate}%</span></div>
+        </div>
+        <div class="status-box">At age <strong>${retAge}</strong>, portfolio ≈ <strong>${fmt(Math.round(r.proj))}</strong> &nbsp;·&nbsp; ${ok?`<span style="color:var(--hit);font-weight:600">✅ Fully funded (${r.funded.toFixed(0)}%)</span>`:`<span style="color:var(--miss);font-weight:600">⚠️ ${fmt(r.target-r.proj)} short</span>`}</div>
+        <span class="badge ${cls}">${badge}</span>
+      </div></div>`;
+  }).join('');
+
+  // Savings Rate
+  const srBench=[{label:'Our Rate',pct:sr,sub:`${fmt(contrib)}/mo saved`},{label:'FIRE Min',pct:30,sub:'30% = minimum recommended'},{label:'FIRE Target',pct:50,sub:'50% = accelerated path'},{label:'FIRE Elite',pct:70,sub:'70% = extreme early retire'}];
+  document.getElementById('srGrid').innerHTML=srBench.map(b=>{
+    const c=srColor(b.pct),p=Math.min(b.pct,100),circ=2*Math.PI*24,off=circ*(1-p/100);
+    return`<div class="sr-card"><div class="sr-ring"><svg width="60" height="60" viewBox="0 0 60 60"><circle fill="none" stroke="#ddd9cc" stroke-width="6" cx="30" cy="30" r="24"/><circle fill="none" stroke="${c}" stroke-width="6" stroke-linecap="round" cx="30" cy="30" r="24" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg><div class="ring-text" style="color:${c}">${p.toFixed(0)}%</div></div><div class="sr-label">${b.label}</div><div class="sr-sub">${b.sub}</div></div>`;
+  }).join('');
+
+  // Coast FIRE
+  document.getElementById('coastCards').innerHTML=results.map(r=>{
+    const c=r.coasted,pct=Math.min(r.coastPct,100);
+    const detail=c?`🎉 <strong>Already achieved!</strong> Even if we stopped investing today, our portfolio would grow to ${fmt(r.target)} by age ${retAge} on its own.`:r.cAge!==null?`We'll reach Coast FIRE at age <strong>${r.cAge.toFixed(1)}</strong> — <strong>${r.ytc.toFixed(1)} years away</strong>. After that, no investing needed.`:`Not reachable by age ${retAge} at current contributions.`;
+    return`<div class="coast-card ${c?'coasted':''}"><div class="coast-card-name" style="color:${r.accent}">${r.emoji} ${r.name}</div><div class="coast-number" style="color:${c?'#2f7a5a':r.accent}">${fmt(r.coastNum)}</div><div class="coast-sublabel">Portfolio needed to stop investing today</div><span class="coast-badge ${c?'yes':'no'}">${c?'🌊 Achieved!':'⏳ Not yet'}</span><div class="coast-detail">${detail}</div><div class="coast-bar-labels"><span>${fmt(start)}</span><span>${pct.toFixed(0)}% there</span></div><div class="coast-bar-track"><div class="coast-bar-fill" style="width:${pct.toFixed(1)}%;background:${c?'#2f7a5a':r.accent}"></div></div></div>`;
+  }).join('');
+
+  // Monte Carlo
+  const mcRef=results[2].mc;
+  document.getElementById('mcSummary').innerHTML=[
+    {label:'Best Case (P90)',key:'p90',color:'#2f7a5a',sub:'Top 10% of outcomes'},
+    {label:'Likely (P75)',key:'p75',color:'#2f4f4f',sub:'75th percentile'},
+    {label:'Median (P50)',key:'p50',color:'#3a9ec4',sub:'Half of simulations'},
+    {label:'Conservative (P25)',key:'p25',color:'#708099',sub:'Bottom 25%'},
+  ].map(c=>`<div class="mc-card"><div class="mc-pct" style="color:${c.color}">${fmt(mcRef[c.key])}</div><div class="mc-label">${c.label}</div><div class="mc-sub">${c.sub}</div></div>`).join('');
+  if(mcChartObj)mcChartObj.destroy();
+  mcChartObj=new Chart(document.getElementById('mcChart'),{type:'bar',data:{labels:results.map(r=>r.emoji+' '+r.name.replace('The ','')),datasets:[{label:'Success %',data:results.map(r=>+r.mc.rate),backgroundColor:ACCENTS.map(c=>c+'44'),borderColor:ACCENTS,borderWidth:2,borderRadius:8}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`Success: ${c.raw}%`}}},scales:{x:{ticks:{color:'#8a8f9a'},grid:{color:'#e8e4d8'}},y:{min:0,max:100,ticks:{color:'#8a8f9a',callback:v=>v+'%'},grid:{color:'#e8e4d8'}}}}});
+
+  // Growth Chart
+  const maxY=Math.max(35,ytr+5);
+  const labs=Array.from({length:maxY+1},(_,i)=>age+i);
+  const ds=results.map((s,i)=>{
+    const d=[];let p=start;
+    for(let y=0;y<=maxY;y++){
+      d.push(Math.round(p));
+      for(let m=0;m<12;m++){const absM=y*12+m;if(fromPortfolio&&absM===purchaseMonth&&purchaseAmt>0)p=Math.max(0,p-purchaseAmt);p=p*(1+r)+contrib;if(!fromPortfolio&&purchaseAmt>0&&absM>=purchaseMonth&&absM<purchaseMonth+12)p-=(purchaseAmt/12);}
+    }
+    return{label:`${s.emoji} ${s.name}`,data:d,borderColor:ACCENTS[i],backgroundColor:'transparent',borderWidth:2,pointRadius:0,tension:0.4};
+  });
+  results.forEach((s,i)=>ds.push({label:`T${i}`,data:Array(maxY+1).fill(s.target),borderColor:ACCENTS[i],borderDash:[6,4],borderWidth:1,pointRadius:0,backgroundColor:'transparent'}));
+  if(gChart)gChart.destroy();
+  gChart=new Chart(document.getElementById('growthChart'),{type:'line',data:{labels:labs,datasets:ds},options:{responsive:true,plugins:{legend:{labels:{color:'#8a8f9a',font:{size:10},filter:i=>!i.text.startsWith('T')}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmt(c.raw)}`}}},scales:{x:{ticks:{color:'#8a8f9a'},grid:{color:'#e8e4d8'},title:{display:true,text:'Age',color:'#8a8f9a'}},y:{ticks:{color:'#8a8f9a',callback:v=>fmt(v)},grid:{color:'#e8e4d8'}}}}});
+
+  // ── Longevity / Burn-Down ──
+  document.getElementById('longevitySummary').innerHTML=results.map(r=>{
+    const isInf=r.lonReal===null;
+    const realYrs=isInf?'∞':r.lonReal.toFixed(0);
+    const pessYrs=r.lonPess!==null?r.lonPess.toFixed(0):'∞';
+    const runOutAge=isInf?'never':`age ${(r.lonRetireAge+(r.lonReal||0)).toFixed(0)}`;
+    const lc=lonColor(r.lonReal);
+    return`<div class="lon-card ${isInf?'never-runs-out':''}">
+      <div class="lon-label">${r.emoji} ${r.name.replace('The ','')}</div>
+      <div class="lon-years" style="color:${lc}">${realYrs}<span style="font-size:0.7rem;font-weight:400"> yrs</span></div>
+      <div class="lon-sub">${isInf?'💚 Never runs out!':'Runs out ~'+runOutAge}</div>
+      <div class="lon-sub" style="margin-top:3px">Worst case: ${pessYrs} yrs</div>
+    </div>`;
+  }).join('');
+
+  const lonMaxYears=65;
+  const lonLabels=Array.from({length:lonMaxYears+1},(_,i)=>i);
+  const lonDs=[];
+  results.forEach((r,i)=>{
+    const ms=r.annualWithdrawal/12;
+    // 6% growth (realistic)
+    const realD=[];let p=r.proj;
+    for(let y=0;y<=lonMaxYears;y++){
+      realD.push(Math.max(0,Math.round(p)));
+      if(p<=0){for(let yy=y+1;yy<=lonMaxYears;yy++)realD.push(0);break;}
+      for(let m=0;m<12;m++)p=p*(1+6/100/12)-ms;
+    }
+    while(realD.length<lonMaxYears+1)realD.push(0);
+    // 0% growth (pessimistic)
+    const pessD=[];let p2=r.proj;
+    for(let y=0;y<=lonMaxYears;y++){
+      pessD.push(Math.max(0,Math.round(p2)));
+      if(p2<=0){for(let yy=y+1;yy<=lonMaxYears;yy++)pessD.push(0);break;}
+      p2-=ms*12;
+    }
+    while(pessD.length<lonMaxYears+1)pessD.push(0);
+    lonDs.push({label:`${r.emoji} ${r.name} (6% growth)`,data:realD,borderColor:ACCENTS[i],backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,tension:0.3});
+    lonDs.push({label:`${r.emoji} ${r.name} (0% growth)`,data:pessD,borderColor:ACCENTS[i],borderDash:[5,4],borderWidth:1.2,pointRadius:0,backgroundColor:'transparent',tension:0.3});
+  });
+  if(lonChart)lonChart.destroy();
+  lonChart=new Chart(document.getElementById('longevityChart'),{
+    type:'line',data:{labels:lonLabels,datasets:lonDs},
+    options:{responsive:true,
+      plugins:{
+        legend:{labels:{color:'#8a8f9a',font:{size:10},filter:i=>i.text.includes('6%')}},
+        tooltip:{callbacks:{title:ctx=>`Year ${ctx[0].label} of retirement`,label:ctx=>`${ctx.dataset.label}: ${fmt(ctx.raw)}`}}
+      },
+      scales:{
+        x:{ticks:{color:'#8a8f9a'},grid:{color:'#e8e4d8'},title:{display:true,text:'Years into Retirement',color:'#8a8f9a'}},
+        y:{ticks:{color:'#8a8f9a',callback:v=>fmt(v)},grid:{color:'#e8e4d8'},min:0}
+      }
+    }
+  });
+
+  // Summary Table
+  document.getElementById('summaryTable').innerHTML=`
+    <tr><th>Scenario</th><th>Goal</th><th>Coast #</th><th>Coast</th><th>Retire (You/Wife)</th><th>Lasts (6%)</th><th>🚗 Delay</th><th>MC%</th><th>Status</th></tr>
+    ${results.map(r=>{
+      const a=r.rAgeWith;
+      const cls=a!==null&&a<=retAge?'tg':a!==null&&a<=retAge+7?'ty':'tr';
+      const status=cls==='tg'?`✅ By ${retAge}`:cls==='ty'?'⚠️ Close':'❌ Miss';
+      const coast=r.coasted?`<span class="tg">🌊 Achieved!</span>`:r.cAge?`<span class="tb">Age ${r.cAge.toFixed(1)}</span>`:`<span class="ty">Not yet</span>`;
+      const delay=purchaseAmt>0&&r.delayMonths!==null?(r.delayMonths===0?`<span class="tg">No delay</span>`:`<span style="color:var(--porsche);font-weight:700">+${r.delayMonths} mo</span>`):'<span style="color:var(--text3)">—</span>';
+      const lonTxt=r.lonReal===null?'<span class="tg">∞ Never</span>':`<span style="color:${lonColor(r.lonReal)};font-weight:700">${r.lonReal.toFixed(0)} yrs</span>`;
+      return`<tr><td><strong style="color:${r.accent}">${r.emoji} ${r.name}</strong></td><td>${fmt(r.target)}</td><td>${fmt(r.coastNum)}</td><td>${coast}</td><td class="${cls}">${a?a.toFixed(1):'—'} / ${r.wrAgeWith?r.wrAgeWith.toFixed(1):'—'}</td><td>${lonTxt}</td><td>${delay}</td><td style="color:${mcColor(r.mc.rate)};font-weight:700">${r.mc.rate}%</td><td class="${cls}">${status}</td></tr>`;
+    }).join('')}`;
+}
+
+['contrib','portfolio','income','returnRate','inflationRate','age','wifeAge','retireAge','purchaseAmt','purchaseAge','purchaseSource'].forEach(id=>
+  document.getElementById(id).addEventListener('input',update)
+);
+update();
+</script>
+</body>
+</html>
