@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Net Worth Dashboard</title>
+<style>
+#gate {
+  position:fixed; top:0; left:0; width:100%; height:100%; z-index:99999;
+  background:#120e1e;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Segoe UI',sans-serif;
+}
+#gate::before {
+  content:'';
+  position:absolute; top:-20%; left:-10%; width:60%; height:60%;
+  background:radial-gradient(ellipse,rgba(160,80,255,0.25) 0%,transparent 70%);
+  pointer-events:none;
+}
+#gate::after {
+  content:'';
+  position:absolute; bottom:-20%; right:-10%; width:55%; height:55%;
+  background:radial-gradient(ellipse,rgba(64,208,200,0.2) 0%,transparent 70%);
+  pointer-events:none;
+}
+.gate-box {
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(160,80,255,0.3);
+  border-radius:20px;
+  padding:48px 44px;
+  width:100%;
+  max-width:400px;
+  text-align:center;
+  position:relative;
+  z-index:1;
+  backdrop-filter:blur(20px);
+  box-shadow:0 8px 40px rgba(120,60,220,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.gate-icon { font-size:2.5rem; margin-bottom:16px; }
+.gate-title {
+  font-size:1.4rem; font-weight:800; color:rgba(255,255,255,0.95);
+  margin-bottom:4px; letter-spacing:-0.02em;
+}
+.gate-subtitle {
+  font-size:0.8rem; color:rgba(160,120,255,0.7); margin-bottom:32px;
+  text-transform:uppercase; letter-spacing:0.08em;
+}
+.gate-input {
+  width:100%; background:rgba(255,255,255,0.07);
+  border:1px solid rgba(160,80,255,0.3); border-radius:12px;
+  padding:14px 18px; font-size:1rem; color:rgba(255,255,255,0.9);
+  font-family:'Segoe UI',sans-serif; outline:none; text-align:center;
+  letter-spacing:0.15em; margin-bottom:16px;
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+.gate-input:focus {
+  border-color:rgba(160,80,255,0.7);
+  box-shadow:0 0 0 3px rgba(160,80,255,0.15);
+}
+.gate-input.error {
+  border-color:rgba(255,80,96,0.7);
+  box-shadow:0 0 0 3px rgba(255,80,96,0.15);
+  animation:shake 0.4s ease;
+}
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}
+}
+.gate-btn {
+  width:100%;
+  background:linear-gradient(135deg,rgba(160,80,255,0.5),rgba(64,208,200,0.4));
+  border:1px solid rgba(160,80,255,0.4); border-radius:12px;
+  padding:14px; font-size:0.9rem; font-weight:700;
+  color:rgba(255,255,255,0.95); font-family:'Segoe UI',sans-serif;
+  cursor:pointer; letter-spacing:0.06em; text-transform:uppercase;
+  transition:all 0.2s; box-shadow:0 4px 16px rgba(120,60,220,0.3);
+}
+.gate-btn:hover {
+  background:linear-gradient(135deg,rgba(160,80,255,0.7),rgba(64,208,200,0.6));
+  box-shadow:0 6px 24px rgba(120,60,220,0.5); transform:translateY(-1px);
+}
+.gate-btn:active { transform:translateY(0); }
+.gate-error {
+  font-size:0.75rem; color:rgba(255,100,120,0.9); margin-top:12px;
+  height:18px; font-weight:600; letter-spacing:0.04em;
+}
+</style>
+</head>
+<body>
+
+<!-- Password Gate -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-icon">💼</div>
+    <div class="gate-title">Net Worth Dashboard</div>
+    <div class="gate-subtitle">Private Dashboard</div>
+    <input
+      class="gate-input"
+      id="gateInput"
+      type="password"
+      placeholder="Enter password"
+      onkeydown="if(event.key==='Enter')checkPassword()"
+      autocomplete="current-password"
+    >
+    <button class="gate-btn" onclick="checkPassword()">Unlock Dashboard</button>
+    <div class="gate-error" id="gateError"></div>
+  </div>
+</div>
+
+<script>
+// ── SET YOUR PASSWORD HERE ────────────────────────────────────────────────────
+const DASHBOARD_PASSWORD = "changeme123";
+// ─────────────────────────────────────────────────────────────────────────────
+
+if (sessionStorage.getItem('networth_unlocked') === 'true') {
+  document.getElementById('gate').style.display = 'none';
+}
+
+function checkPassword() {
+  const input = document.getElementById('gateInput');
+  const error = document.getElementById('gateError');
+  if (input.value === DASHBOARD_PASSWORD) {
+    sessionStorage.setItem('networth_unlocked', 'true');
+    document.getElementById('gate').style.display = 'none';
+    error.textContent = '';
+  } else {
+    input.classList.remove('error');
+    void input.offsetWidth;
+    input.classList.add('error');
+    error.textContent = 'Incorrect password — try again';
+    input.value = '';
+    input.focus();
+    setTimeout(() => input.classList.remove('error'), 500);
+  }
+}
+</script>
+
+<title>Net Worth Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+:root {
+  --bg:#f0ede4;--bg2:#e8e4d8;--panel:#ffffff;--panel2:#f7f4ed;--border:#ddd9cc;
+  --teal:#2f4f4f;--slate:#708099;--mint:#a0c4b8;--sky:#87ceeb;
+  --text:#2a2a2a;--text2:#555e6b;--text3:#8a8f9a;
+  --hit:#2f7a5a;--hit-bg:#e6f4ee;--warn:#a05a1a;--warn-bg:#fef3e2;
+  --miss:#8b2233;--miss-bg:#fde8ec;--gold:#c9a84c;--gold-bg:#fdf6e3;
+  --re:#5a3e8a;--re-bg:#f3f0fc;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding:24px;min-height:100vh;}
+
+/* Header */
+.header{background:linear-gradient(135deg,var(--teal) 0%,#3d6b6b 60%,var(--slate) 100%);border-radius:20px;padding:28px 32px;margin-bottom:20px;color:white;box-shadow:0 8px 32px rgba(47,79,79,0.22);display:flex;justify-content:space-between;align-items:center;}
+.header-left h1{font-family:'DM Serif Display',serif;font-size:2rem;color:#f5f5dc;margin-bottom:4px;}
+.header-left p{font-size:0.85rem;color:rgba(245,245,220,0.7);}
+.header-right{text-align:right;}
+.header-networth{font-family:'DM Serif Display',serif;font-size:2.4rem;color:#f5f5dc;line-height:1;}
+.header-sub{font-size:0.78rem;color:rgba(245,245,220,0.65);margin-top:3px;}
+.header-change{font-size:0.82rem;font-weight:600;margin-top:4px;}
+.header-change.up{color:#6ee7b7;}.header-change.down{color:#fca5a5;}
+.header-links{display:flex;gap:10px;margin-top:10px;justify-content:flex-end;}
+.header-link-btn{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:6px 14px;font-size:0.75rem;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;transition:background 0.2s;}
+.header-link-btn:hover{background:rgba(255,255,255,0.25);}
+
+/* Tabs */
+.year-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.year-tab{background:var(--panel);border:2px solid var(--border);border-radius:10px;padding:8px 16px;font-size:0.8rem;font-weight:700;color:var(--text3);cursor:pointer;transition:all 0.2s;}
+.year-tab.active{background:var(--teal);border-color:var(--teal);color:white;}
+.year-tab:hover:not(.active){border-color:var(--teal);color:var(--teal);}
+.year-tab.future-year{border-style:dashed;color:var(--slate);}
+.year-tab.future-year.active{background:var(--slate);border-color:var(--slate);color:white;border-style:solid;}
+
+/* Panels */
+.panel{background:var(--panel);border-radius:18px;padding:22px;margin-bottom:18px;border:1px solid var(--border);box-shadow:0 2px 16px rgba(47,79,79,0.07);}
+.panel h2{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--teal);margin-bottom:4px;}
+.panel-desc{font-size:0.74rem;color:var(--text3);margin-bottom:16px;line-height:1.5;}
+
+/* Stat cards */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+.stat-card{background:var(--panel);border-radius:16px;padding:18px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(47,79,79,0.06);}
+.stat-label{font-size:0.67rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;}
+.stat-value{font-family:'DM Serif Display',serif;font-size:1.6rem;margin-bottom:2px;}
+.stat-sub{font-size:0.67rem;color:var(--text3);}
+.stat-change{font-size:0.72rem;font-weight:600;margin-top:4px;}
+.stat-change.up{color:var(--hit);}.stat-change.down{color:var(--miss);}
+.stat-bar{height:4px;border-radius:999px;margin-top:8px;background:var(--bg2);overflow:hidden;}
+.stat-bar-fill{height:100%;border-radius:999px;}
+
+/* Asset breakdown */
+.asset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.asset-card{background:var(--panel2);border-radius:12px;padding:14px;border:1px solid var(--border);}
+.asset-name{font-size:0.7rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;}
+.asset-value{font-family:'DM Serif Display',serif;font-size:1.2rem;color:var(--teal);margin-bottom:2px;}
+.asset-change{font-size:0.68rem;font-weight:600;}
+.asset-change.up{color:var(--hit);}.asset-change.down{color:var(--miss);}.asset-change.flat{color:var(--text3);}
+.asset-bar{height:3px;border-radius:999px;background:var(--bg2);overflow:hidden;margin-top:6px;}
+.asset-bar-fill{height:100%;border-radius:999px;}
+
+/* FIRE progress */
+.fire-section{background:linear-gradient(135deg,#f7f4ed 0%,#eef5f0 100%);border-radius:16px;padding:20px;margin-bottom:18px;border:1px solid var(--mint);}
+.fire-section h2{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--teal);margin-bottom:14px;}
+.fire-bar-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+.fire-bar-label{font-size:0.78rem;font-weight:700;color:var(--teal);}
+.fire-bar-pct{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--hit);}
+.fire-track{background:var(--bg2);border-radius:999px;height:16px;overflow:hidden;}
+.fire-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--mint));transition:width 0.6s ease;}
+.fire-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+.fire-stat{background:white;border-radius:10px;padding:12px 14px;border:1px solid var(--border);}
+.fire-stat-label{font-size:0.67rem;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em;}
+.fire-stat-value{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--teal);}
+
+/* Growth rate section */
+.growth-section{background:linear-gradient(135deg,#f0f4ff,#eaf6f0);border-radius:16px;padding:20px;margin-bottom:18px;border:1px solid #b8c8e8;}
+.growth-section h2{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--teal);margin-bottom:4px;}
+.growth-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px;}
+.growth-card{background:white;border-radius:12px;padding:14px;border:1px solid var(--border);text-align:center;}
+.growth-card-label{font-size:0.67rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;}
+.growth-card-value{font-family:'DM Serif Display',serif;font-size:1.5rem;margin-bottom:3px;}
+.growth-card-sub{font-size:0.67rem;color:var(--text3);}
+.milestone-row{display:flex;align-items:center;gap:12px;margin-top:14px;background:white;border-radius:12px;padding:14px 18px;border:1px solid var(--border);flex-wrap:wrap;}
+.milestone-item{flex:1;min-width:120px;}
+.milestone-label{font-size:0.67rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;}
+.milestone-value{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--teal);}
+
+/* Real estate equity */
+.re-section{background:var(--re-bg);border-radius:16px;padding:20px;margin-bottom:18px;border:1px solid #c8b8e8;}
+.re-section h2{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--re);margin-bottom:4px;}
+.re-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+.re-card{background:white;border-radius:12px;padding:14px;border:1px solid var(--border);}
+.re-card-label{font-size:0.67rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;}
+.re-card-value{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--re);margin-bottom:3px;}
+.re-card-sub{font-size:0.67rem;color:var(--text3);}
+.re-bar-wrap{margin-top:14px;}
+.re-bar-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
+.re-bar-label{font-size:0.78rem;font-weight:700;color:var(--re);}
+.re-bar-pct{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--re);}
+.re-track{background:var(--bg2);border-radius:999px;height:14px;overflow:hidden;}
+.re-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--re),#8a6acc);transition:width 0.6s;}
+
+/* Savings rate */
+.sr-inline-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px;}
+.sr-inline-card{background:var(--panel2);border-radius:12px;padding:14px;border:1px solid var(--border);text-align:center;}
+.sr-ring{position:relative;width:64px;height:64px;margin:0 auto 8px;}
+.sr-ring svg{transform:rotate(-90deg);}
+.ring-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:0.78rem;font-weight:800;}
+.sr-label{font-size:0.7rem;color:var(--text2);font-weight:700;margin-bottom:2px;}
+.sr-sub{font-size:0.63rem;color:var(--text3);}
+
+/* YoY comparison */
+.yoy-section{background:var(--panel);border-radius:18px;padding:22px;margin-bottom:18px;border:1px solid var(--border);box-shadow:0 2px 16px rgba(47,79,79,0.07);}
+.yoy-section h2{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--teal);margin-bottom:4px;}
+.yoy-table-wrap{overflow-x:auto;margin-top:14px;}
+.yoy-table{width:100%;border-collapse:collapse;font-size:0.78rem;white-space:nowrap;}
+.yoy-table th{text-align:right;color:var(--teal);font-weight:700;padding:8px 12px;border-bottom:2px solid var(--border);}
+.yoy-table th:first-child{text-align:left;}
+.yoy-table td{padding:8px 12px;border-bottom:1px solid var(--bg2);text-align:right;color:var(--text2);}
+.yoy-table td:first-child{text-align:left;font-weight:600;color:var(--text);}
+.yoy-table tr:hover td{background:var(--panel2);}
+.yoy-table tr.yoy-total td{font-weight:700;color:var(--teal);background:var(--bg2);}
+.yoy-up{color:var(--hit);font-weight:600;}
+.yoy-down{color:var(--miss);font-weight:600;}
+
+/* Debt payoff */
+.debt-section{background:linear-gradient(135deg,#fff8f0,#fdf3e8);border-radius:16px;padding:20px;margin-bottom:18px;border:1px solid #e8c898;}
+.debt-section h2{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--warn);margin-bottom:4px;}
+.debt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px;}
+.debt-card{background:white;border-radius:12px;padding:14px;border:1px solid var(--border);}
+.debt-card-label{font-size:0.67rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;}
+.debt-card-value{font-family:'DM Serif Display',serif;font-size:1.3rem;margin-bottom:3px;}
+.debt-card-sub{font-size:0.67rem;color:var(--text3);}
+.debt-bar-wrap{margin-top:14px;}
+.debt-bar-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
+.debt-track{background:var(--bg2);border-radius:999px;height:12px;overflow:hidden;}
+.debt-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--hit),var(--mint));transition:width 0.6s;}
+
+/* Goals */
+.goals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.goal-card{background:var(--panel);border-radius:14px;padding:16px;border:2px solid var(--border);position:relative;overflow:hidden;}
+.goal-card.achieved{border-color:var(--mint);background:var(--hit-bg);}
+.goal-card.current{border-color:var(--gold);background:var(--gold-bg);}
+.goal-card-age{font-family:'DM Serif Display',serif;font-size:2.5rem;color:var(--teal);opacity:0.15;position:absolute;top:8px;right:14px;line-height:1;}
+.goal-card-label{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text3);margin-bottom:6px;}
+.goal-card-amount{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--teal);margin-bottom:4px;}
+.goal-card-date{font-size:0.72rem;color:var(--text3);margin-bottom:8px;}
+.goal-card-note{font-size:0.7rem;color:var(--text2);font-style:italic;}
+.goal-badge{display:inline-block;font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:999px;margin-bottom:8px;}
+.goal-badge.achieved{background:var(--hit-bg);color:var(--hit);}
+.goal-badge.current{background:var(--gold-bg);color:#8a6a10;border:1px solid var(--gold);}
+.goal-badge.future{background:var(--bg2);color:var(--text3);}
+.goal-progress-bar{height:6px;background:var(--bg2);border-radius:999px;overflow:hidden;margin-top:10px;}
+.goal-progress-fill{height:100%;border-radius:999px;}
+
+/* Spending */
+.spending-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.spending-stats{display:flex;gap:10px;flex-wrap:wrap;}
+.s-stat{background:var(--panel2);border-radius:8px;padding:6px 12px;font-size:0.72rem;color:var(--text2);border:1px solid var(--border);}
+.s-stat span{font-weight:700;color:var(--teal);}
+.spending-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:380px;overflow-y:auto;padding-right:4px;}
+.spending-list::-webkit-scrollbar{width:4px;}
+.spending-list::-webkit-scrollbar-track{background:var(--bg2);border-radius:999px;}
+.spending-list::-webkit-scrollbar-thumb{background:var(--mint);border-radius:999px;}
+.spend-item{background:var(--panel2);border-radius:10px;padding:10px 12px;border:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.spend-item.purchased{border-color:var(--mint);background:var(--hit-bg);}
+.spend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.spend-dot.purchased{background:var(--hit);}.spend-dot.pending{background:var(--text3);}
+.spend-info{flex:1;min-width:0;}
+.spend-name{font-size:0.72rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.spend-goal{font-size:0.65rem;color:var(--text3);}
+.spend-price{font-size:0.78rem;font-weight:700;color:var(--teal);flex-shrink:0;}
+
+/* Charts */
+.chart-subtitle{font-size:0.72rem;color:var(--text3);margin-bottom:14px;}
+.chart-grid{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px;}
+.mom-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.mom-card{background:var(--panel2);border-radius:12px;padding:12px 14px;border:1px solid var(--border);text-align:center;}
+.mom-label{font-size:0.67rem;color:var(--text3);margin-bottom:4px;}
+.mom-val{font-family:'DM Serif Display',serif;font-size:1.1rem;}
+.mom-val.up{color:var(--hit);}.mom-val.down{color:var(--miss);}
+
+/* Monthly table */
+.month-table-wrap{overflow-x:auto;}
+table.main-table{width:100%;border-collapse:collapse;font-size:0.75rem;white-space:nowrap;}
+table.main-table th{text-align:right;color:var(--teal);font-weight:700;padding:8px 10px;border-bottom:2px solid var(--border);font-size:0.68rem;}
+table.main-table th:first-child{text-align:left;}
+table.main-table td{padding:7px 10px;border-bottom:1px solid var(--bg2);color:var(--text2);text-align:right;}
+table.main-table td:first-child{text-align:left;font-weight:600;color:var(--text);}
+table.main-table tr.summary-row td{font-weight:700;color:var(--teal);background:var(--bg2);}
+table.main-table tr.section-header td{background:var(--bg2);font-size:0.67rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text3);padding:5px 10px;}
+table.main-table tr:hover:not(.section-header):not(.summary-row) td{background:var(--panel2);}
+.cell-up{color:var(--hit)!important;font-weight:600;}
+.cell-down{color:var(--miss)!important;font-weight:600;}
+.cell-empty{color:var(--border)!important;}
+
+/* Entry panel */
+.entry-panel{background:linear-gradient(135deg,#f7f4ed,#eef4f8);border-radius:18px;padding:22px;margin-bottom:18px;border:2px solid var(--mint);}
+.entry-panel h2{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--teal);margin-bottom:4px;}
+.entry-select-row{display:flex;gap:12px;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;}
+.entry-select-row select{background:white;border:1.5px solid var(--border);border-radius:10px;padding:8px 14px;font-size:0.82rem;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;}
+.entry-select-row select:focus{border-color:var(--teal);}
+.entry-fields{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.entry-field label{display:block;font-size:0.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px;}
+.entry-field input{width:100%;background:white;border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:0.85rem;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;}
+.entry-field input:focus{border-color:var(--teal);}
+.entry-field input.filled{border-color:var(--mint);background:#f0fdf8;}
+.entry-section-label{font-size:0.72rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.05em;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+.entry-btn-row{display:flex;gap:10px;align-items:center;margin-top:4px;flex-wrap:wrap;}
+.btn{padding:10px 24px;border-radius:10px;font-size:0.82rem;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.btn-primary{background:var(--teal);color:white;}.btn-primary:hover{background:#3d6b6b;}
+.btn-secondary{background:var(--bg2);color:var(--text2);border:1px solid var(--border);}
+.btn-danger{background:var(--miss-bg);color:var(--miss);border:1px solid #fca5a580;}
+.entry-saved{font-size:0.75rem;color:var(--hit);font-weight:600;display:none;}
+.entry-saved.show{display:inline;}
+.entry-preview{background:white;border-radius:12px;padding:14px 16px;border:1px solid var(--border);margin-top:16px;}
+.entry-preview h4{font-size:0.78rem;font-weight:700;color:var(--teal);margin-bottom:10px;}
+.preview-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.preview-item{background:var(--panel2);border-radius:8px;padding:8px 10px;}
+.pi-label{font-size:0.63rem;color:var(--text3);margin-bottom:2px;}
+.pi-val{font-size:0.82rem;font-weight:700;color:var(--teal);}
+
+@media(max-width:768px){
+  .stat-row,.asset-grid,.goals-grid,.mom-grid,.entry-fields,.growth-grid,.re-grid,.debt-grid,.sr-inline-grid{grid-template-columns:1fr 1fr;}
+  .chart-grid{grid-template-columns:1fr;}
+  .spending-list{grid-template-columns:1fr;}
+  .header{flex-direction:column;gap:12px;}
+  .header-right{text-align:left;}
+  .preview-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <h1>💼 Net Worth Dashboard</h1>
+    <p>Full financial picture — 2024 through 2034</p>
+  </div>
+  <div class="header-right">
+    <div class="header-networth" id="headerNetworth">—</div>
+    <div class="header-sub" id="headerSub">Current Net Worth</div>
+    <div class="header-change" id="headerChange"></div>
+  </div>
+</div>
+
+<!-- Year Tabs -->
+<div class="year-tabs" id="yearTabs"></div>
+
+<!-- Stat Cards -->
+<div class="stat-row" id="statRow"></div>
+
+<!-- FIRE Progress -->
+<div class="fire-section" id="fireSection"></div>
+
+<!-- #1: Growth Rate Tracker -->
+<div class="growth-section">
+  <h2>📈 Net Worth Growth Rate</h2>
+  <p class="panel-desc" style="color:#4a5a7a">How fast your net worth is growing — annualized rate, monthly average, and projected milestone dates at the current pace.</p>
+  <div class="growth-grid" id="growthGrid"></div>
+  <div class="milestone-row" id="milestoneRow"></div>
+</div>
+
+<!-- #2: Real Estate Equity Tracker -->
+<div class="re-section">
+  <h2>🏠 Real Estate Equity Tracker</h2>
+  <p class="panel-desc" style="color:#5a4a7a">Your Age 35 goal requires <strong>real estate equity ≥ $600K</strong> by Dec 2029. Equity = Home Value − Mortgage − HELOC.</p>
+  <div class="re-grid" id="reGrid"></div>
+  <div class="re-bar-wrap" id="reBarWrap"></div>
+</div>
+
+<!-- #3: Savings Rate (inline) -->
+<div class="panel">
+  <h2>💰 Monthly Savings Rate</h2>
+  <p class="panel-desc">Comparing your actual savings rate this month against FIRE benchmarks. Update your income in the entry panel to keep this current.</p>
+  <div class="sr-inline-grid" id="srGrid"></div>
+</div>
+
+<!-- Asset Breakdown -->
+<div class="panel">
+  <h2>🏦 Asset Breakdown <span id="assetBreakdownMonth" style="font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:400;color:var(--text3)"></span></h2>
+  <p class="panel-desc">Each asset category for the most recent entered month.</p>
+  <div class="asset-grid" id="assetGrid"></div>
+</div>
+
+<!-- Charts -->
+<div class="chart-grid">
+  <div class="panel">
+    <h2>📈 Net Worth Over Time</h2>
+    <p class="chart-subtitle" id="chartSubtitle">Tracking your wealth journey</p>
+    <canvas id="nwChart" height="130"></canvas>
+  </div>
+  <div class="panel">
+    <h2>🥧 Asset Allocation</h2>
+    <p class="chart-subtitle">Current portfolio breakdown</p>
+    <canvas id="pieChart" height="130"></canvas>
+  </div>
+</div>
+
+<!-- MoM -->
+<div class="panel">
+  <h2>📅 Month-over-Month Changes</h2>
+  <p class="panel-desc">How each key metric moved vs. the prior month.</p>
+  <div class="mom-grid" id="momGrid"></div>
+</div>
+
+<!-- #4: Year-over-Year Comparison -->
+<div class="yoy-section">
+  <h2>📊 Year-over-Year Comparison</h2>
+  <p class="panel-desc">Side-by-side snapshot of December (or latest available month) for each year — see how each asset grew annually.</p>
+  <div class="yoy-table-wrap"><table class="yoy-table" id="yoyTable"></table></div>
+</div>
+
+<!-- #5: Debt Payoff Tracker -->
+<div class="debt-section">
+  <h2>🏦 Debt Payoff Tracker</h2>
+  <p class="panel-desc" style="color:#7a4820">Projected mortgage payoff date, monthly principal paid, total interest remaining, and total interest saved vs original loan at current pace.</p>
+  <div class="debt-grid" id="debtGrid"></div>
+  <div class="debt-bar-wrap" id="debtBarWrap"></div>
+</div>
+
+<!-- Goals -->
+<div class="panel">
+  <h2>🎯 Age Milestone Goals</h2>
+  <p class="panel-desc">Your long-term net worth goals by age — tracking progress toward each milestone.</p>
+  <div class="goals-grid" id="goalsGrid"></div>
+</div>
+
+<!-- Spending Rewards -->
+<div class="panel">
+  <h2>🛍️ Spending Rewards</h2>
+  <p class="panel-desc">Each purchase unlocks when your investment total hits its goal. Green = purchased, gray = pending.</p>
+  <div class="spending-header"><div></div><div class="spending-stats" id="spendingStats"></div></div>
+  <div class="spending-list" id="spendingList"></div>
+</div>
+
+<!-- Entry Panel -->
+<div class="entry-panel">
+  <h2>✏️ Add / Edit Monthly Data</h2>
+  <p class="panel-desc">Select a year and month, fill in your numbers, and hit Save. Data saves to your browser. Years 2026–2034 are ready for future entries.</p>
+  <div class="entry-select-row">
+    <div>
+      <label style="font-size:0.72rem;font-weight:700;color:var(--text3);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em">Year</label>
+      <select id="entryYear" onchange="loadEntryForm()"></select>
+    </div>
+    <div>
+      <label style="font-size:0.72rem;font-weight:700;color:var(--text3);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em">Month</label>
+      <select id="entryMonth" onchange="loadEntryForm()"></select>
+    </div>
+    <div>
+      <label style="font-size:0.72rem;font-weight:700;color:var(--text3);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.04em">Monthly Income</label>
+      <select id="entryIncome">
+        <option value="8000">$8,000</option><option value="9000">$9,000</option>
+        <option value="10000">$10,000</option><option value="11000">$11,000</option>
+        <option value="12000" selected>$12,000</option><option value="13000">$13,000</option>
+        <option value="14000">$14,000</option><option value="15000">$15,000</option>
+        <option value="16000">$16,000</option><option value="18000">$18,000</option>
+        <option value="20000">$20,000</option><option value="25000">$25,000</option>
+      </select>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <span class="entry-saved" id="entrySaved">✅ Saved!</span>
+    </div>
+  </div>
+  <div class="entry-section-label">💰 Assets</div>
+  <div class="entry-fields" id="entryAssets"></div>
+  <div class="entry-section-label">🏦 Liabilities</div>
+  <div class="entry-fields" id="entryLiabilities"></div>
+  <div class="entry-section-label">📊 Summary (auto-calculated, or override manually)</div>
+  <div class="entry-fields" id="entrySummary"></div>
+  <div class="entry-btn-row">
+    <button class="btn btn-primary" onclick="saveEntry()">💾 Save Entry</button>
+    <button class="btn btn-secondary" onclick="clearEntryForm()">Clear Form</button>
+    <button class="btn btn-danger" onclick="deleteEntry()">🗑 Delete This Month</button>
+  </div>
+  <div class="entry-preview" id="entryPreview" style="display:none">
+    <h4>📋 Calculated Preview</h4>
+    <div class="preview-grid" id="previewGrid"></div>
+  </div>
+</div>
+
+<!-- Monthly Table -->
+<div class="panel">
+  <h2>📊 Full Monthly Breakdown</h2>
+  <p class="panel-desc">All assets, liabilities, and net worth month by month. Green = increase, red = decrease vs prior month.</p>
+  <div class="month-table-wrap"><table class="main-table" id="monthTable"></table></div>
+</div>
+
+<script>
+// ── CONSTANTS ────────────────────────────────────────────────────────────────
+const ASSET_KEYS = ['Emergency Fund','Roth IRA','401K + HSA','Crypto','Brokerage','Cash','Home','Car'];
+const LIAB_KEYS  = ['Mortgage','HELOC'];
+const FIRE_TARGET = 1616520;
+const CURRENT_AGE = 32;
+const MORTGAGE_ORIGINAL = 545000;
+const MORTGAGE_RATE = 0.0699; // ~6.99% 30yr
+const MORTGAGE_START_YEAR = 2023;
+const ALL_YEARS = ['2024','2025','2026','2027','2028','2029','2030','2031','2032','2033','2034'];
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const ASSET_COLORS = {
+  'Home':'#2f4f4f','Brokerage':'#3a9ec4','Emergency Fund':'#708099',
+  '401K + HSA':'#3a8a72','Roth IRA':'#a0c4b8','Cash':'#87ceeb',
+  'Crypto':'#a07040','Car':'#c9a84c','HELOC':'#8b2233','Mortgage':'#e08090',
+};
+
+// ── HISTORICAL DATA ───────────────────────────────────────────────────────────
+const HISTORICAL = {
+  '2024':{months:[2,3,4,5,6,7,8,9,10,11],rows:{
+    'Emergency Fund':[50194,50401,50603,50803,51017,51220,51431,51631,51834.87,50000],
+    'Roth IRA':[9128.55,11652.98,11913,13222,15096,15253,15808.48,16147.46,15769.9,16353.43],
+    '401K + HSA':[6443,7194.02,7593,8540,9248,9920.56,11149,12357.05,14239,16293.37],
+    'Crypto':[0,1,1476,1861.27,2435,2994.25,2653.23,3205.76,3384.43,4795.54],
+    'Brokerage':[166937,171432.21,168134,176064,180706,188192,195551,204645,199995,211802.97],
+    'Cash':[15000,15000,15000,15000,15000,15000,15000,15000,15000,15000],
+    'Home':[831000,846214,860000,850468,848360,888397,875755,853524,877423,839019],
+    'Car':[10000,10000,10000,10000,10000,10000,10000,10000,10000,10000],
+    'Mortgage':[525276,524372.14,523612,522748.76,521878.46,521005,520127.49,519244.89,518357.47,517820.47],
+    'HELOC':[0,0,0,0,0,0,0,0,0,0],
+  },networth:[563426.55,587523.07,601107,603209.51,609983.54,659971.81,657220.22,647265.38,669288.73,645443.84],
+  investments:[182508.55,190280.21,189116,199687.27,207485,216359.81,225161.71,236355.27,233388.33,249245.31],
+  leftToFire:[1434011.45,1426239.79,1427404,1416832.73,1409035,1400160.19,1391358.29,1380164.73,1383131.67,1367274.69]},
+  '2025':{months:[0,1,2,3,4,5,6,7,8,9,10,11],rows:{
+    'Emergency Fund':[50193.21,50386.21,50553,50680,50848,51011,51178.99,51342.99,51512.99,51685.73,50000,43761.40],
+    'Roth IRA':[15985.95,16460.27,16228.75,15797.36,15802.71,16599.82,15917.07,17537.35,23021.37,25789.68,26549.38,26513.20],
+    '401K + HSA':[17599,20698,22214,23315,24646.81,27554,30142.02,31816.06,33536.70,35508.02,37841.16,38981],
+    'Crypto':[5130.82,6931.06,5981.48,5572.65,6440.86,7618.93,7626.58,9184.43,9380.77,9865.41,8665.61,0],
+    'Brokerage':[206273.70,218431,221893,215770.20,221350,238101,236896.35,266011.82,270531.89,278719.86,302381.24,303970],
+    'Cash':[15000,15000,17000,15000,17000,17000,17000,15000,10000,10000,10000,3000],
+    'Home':[987347,1019455.15,1023886.71,992412.40,1021077.12,1013646.76,1008033.53,1010093.42,1019594.38,977367.23,966225.26,975996.35],
+    'Car':[10000,10000,10000,9000,25000,25000,25000,25000,25000,25000,25000,25000],
+    'Mortgage':[516920.15,516020.17,515115.32,514555.57,521532,521209.25,520414.54,519886.86,519356.54,518823.57,518287.94,517749.63],
+    'HELOC':[0,0,0,0,0,0,0,0,0,0,0,0],
+  },networth:[790609.53,841341.52,852641.62,812992.04,860633.50,875322.26,871380,906099.21,923221.56,895112.36,908374.71,899472.32],
+  investments:[244989.47,262520.33,266317.23,260455.21,268240.38,289873.75,290582.02,324549.66,336470.73,349882.97,375437.39,369464.20],
+  leftToFire:[1371530.53,1353999.67,1350202.77,1356064.79,1348279.62,1326646.25,1325937.98,1291970.34,1280049.27,1266637.03,1241082.61,1247055.80]},
+  '2026':{months:[0,1,2,3,4],rows:{
+    'Emergency Fund':[36504,31000,30000,26000,26081],
+    'Roth IRA':[26852.64,30826.63,33998,33426,36451.64],
+    '401K + HSA':[40625,43599,43679,42225,47691],
+    'Crypto':[0,0.37,500,509.66,571.99],
+    'Brokerage':[313066.78,320882,324540,264042,338760.49],
+    'Cash':[3000,3000,1000,1000,1000],
+    'Home':[982746.03,973083,963628.68,980679,994840],
+    'Car':[25000,20000,20000,20000,19000],
+    'Mortgage':[517208.63,516664,516120,515569.33,515017],
+    'HELOC':[0,0,0,0,35025],
+  },networth:[910585.82,905727,901225.68,852312.33,914354.12],
+  investments:[380544.42,395308,402717,340202.66,423475.12],
+  leftToFire:[1235975.58,1221212,1213803,1276317.34,1193044.88]},
+};
+
+const SPENDING=[
+  {name:'Bugera 333XL',price:500,goal:184000,purchased:false},
+  {name:'Dodgers season ticket',price:500,goal:194000,purchased:true},
+  {name:'Lakers Warriors x-Mas',price:600,goal:202000,purchased:true},
+  {name:'Jordan 11 Legend Blue',price:250,goal:212000,purchased:true},
+  {name:'Wild card',price:200,goal:225000,purchased:true},
+  {name:'Jordan 3 Cement',price:400,goal:240000,purchased:true},
+  {name:'Rolex Oysterdate',price:2600,goal:248000,purchased:true},
+  {name:'Tissot PRX',price:700,goal:258000,purchased:false},
+  {name:'Sports Trip (Chicago)',price:1500,goal:264000,purchased:true},
+  {name:'Wild Card',price:500,goal:272000,purchased:false},
+  {name:'Jordan 4 White Cement',price:300,goal:279000,purchased:true},
+  {name:'Bracelet for Alexa',price:850,goal:287000,purchased:true},
+  {name:'Tissot PRX Chronograph',price:2000,goal:299000,purchased:false},
+  {name:'Dame Lillard Watch',price:1000,goal:303000,purchased:false},
+  {name:'Hallway Closet',price:1600,goal:311000,purchased:true},
+  {name:'Jordan 1 Shattered Backboard',price:220,goal:321000,purchased:true},
+  {name:'New Shower Head',price:127,goal:337000,purchased:true},
+  {name:'Lakers Tickets',price:650,goal:362000,purchased:true},
+  {name:'Rolex 17013',price:5000,goal:368000,purchased:true},
+  {name:'Lakers Luka Jersey',price:160,goal:378000,purchased:false},
+  {name:'Office Desk',price:400,goal:385000,purchased:false},
+  {name:'Bathroom Remodel',price:5000,goal:495000,purchased:false},
+  {name:'Half Million Milestone!',price:500,goal:500000,purchased:false},
+  {name:'Rolex Datejust',price:7000,goal:507000,purchased:false},
+  {name:'Alaska 7-day Cruise',price:9000,goal:543000,purchased:false},
+  {name:'Kitchen Remodel',price:10000,goal:578000,purchased:false},
+];
+
+const GOALS=[
+  {age:35,target:1000000,date:'Dec 2029',note:'Real estate equity ≥ $600K'},
+  {age:40,target:1700000,date:'Dec 2034',note:''},
+  {age:45,target:3000000,date:'Dec 2039',note:''},
+];
+
+// ── USER DATA ─────────────────────────────────────────────────────────────────
+let userData={};
+let monthlyIncome=12000;
+
+// ── DATA HELPERS ──────────────────────────────────────────────────────────────
+function getYearData(year){
+  const hist=HISTORICAL[year]||null;
+  const all=[];
+  for(let m=0;m<12;m++){
+    const key=`${year}-${m}`;
+    if(hist){
+      const hi=hist.months.indexOf(m);
+      if(hi!==-1){
+        const assets={},liabs={};
+        ASSET_KEYS.forEach(k=>assets[k]=hist.rows[k]?.[hi]||0);
+        LIAB_KEYS.forEach(k=>liabs[k]=hist.rows[k]?.[hi]||0);
+        all.push({month:m,assets,liabs,
+          totalAssets:Object.values(assets).reduce((s,v)=>s+v,0),
+          totalLiab:Object.values(liabs).reduce((s,v)=>s+v,0),
+          networth:hist.networth[hi],investments:hist.investments[hi],leftToFire:hist.leftToFire[hi],hasData:true});
+        continue;
+      }
+    }
+    if(userData[key]){
+      const u=userData[key];
+      const assets={...u.assets};const liabs={...u.liabs};
+      ASSET_KEYS.forEach(k=>{if(assets[k]==null)assets[k]=0;});
+      LIAB_KEYS.forEach(k=>{if(liabs[k]==null)liabs[k]=0;});
+      const tA=Object.values(assets).reduce((s,v)=>s+(+v||0),0);
+      const tL=Object.values(liabs).reduce((s,v)=>s+(+v||0),0);
+      const inv=u.investments!=null?+u.investments:(assets['Brokerage']||0)+(assets['Roth IRA']||0)+(assets['401K + HSA']||0)+(assets['Crypto']||0);
+      const nw=u.networth!=null?+u.networth:tA-tL;
+      const ltf=u.leftToFire!=null?+u.leftToFire:FIRE_TARGET-inv;
+      all.push({month:m,assets,liabs,totalAssets:tA,totalLiab:tL,networth:nw,investments:inv,leftToFire:ltf,hasData:true});
+      continue;
+    }
+    all.push({month:m,hasData:false});
+  }
+  return all;
+}
+
+function getLatestMonth(year){
+  const yd=getYearData(year);
+  for(let i=11;i>=0;i--){if(yd[i]?.hasData)return yd[i];}
+  return null;
+}
+
+function getAllMonths(){
+  const all=[];
+  ALL_YEARS.forEach(yr=>{getYearData(yr).forEach(md=>{if(md.hasData)all.push({year:yr,...md});});});
+  return all;
+}
+
+// Get the year-end (or latest) snapshot for a given year
+function getYearEndSnapshot(year){
+  const yd=getYearData(year).filter(d=>d.hasData);
+  return yd.length>0?yd[yd.length-1]:null;
+}
+
+// ── FORMATTING ────────────────────────────────────────────────────────────────
+function fmt(n,dec=0){if(n==null||isNaN(n))return'—';const s=Math.abs(n);const str=s>=1e6?'$'+(s/1e6).toFixed(2)+'M':'$'+s.toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});return n<0?'-'+str:str;}
+function fmtChange(n){if(!n&&n!==0)return'';const s=n>=0?'▲ +':'▼ ';return s+fmt(Math.abs(n));}
+function fmtPct(n){if(n==null||isNaN(n))return'—';return(n>=0?'+':'')+n.toFixed(1)+'%';}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let currentYear='2026';
+let nwChartObj=null,pieChartObj=null;
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function buildTabs(){
+  document.getElementById('yearTabs').innerHTML=
+    ALL_YEARS.map(yr=>{
+      const isFuture=parseInt(yr)>2026;
+      return`<div class="year-tab${isFuture?' future-year':''}" id="tab${yr}" onclick="setYear('${yr}')">${yr}</div>`;
+    }).join('')+
+    `<div class="year-tab" id="tabAll" onclick="setYear('all')">All Years</div>`;
+}
+
+function setYear(yr){
+  currentYear=yr;
+  document.querySelectorAll('.year-tab').forEach(t=>t.classList.remove('active'));
+  const el=document.getElementById(yr==='all'?'tabAll':'tab'+yr);
+  if(el)el.classList.add('active');
+  renderAll();
+}
+
+// ── RENDER ALL ────────────────────────────────────────────────────────────────
+function getMostRecentMonthAcrossAllYears(){
+  // Always find the absolute most recent month with data across ALL years
+  const allMonths = getAllMonths();
+  if(allMonths.length === 0) return { data: null, year: '2026' };
+  const last = allMonths[allMonths.length - 1];
+  return { data: last, year: last.year };
+}
+
+function renderAll(){
+  // For header/stats/fire/assets — ALWAYS use most recent month across all years
+  const { data: mostRecent, year: mostRecentYear } = getMostRecentMonthAcrossAllYears();
+
+  // For table/chart — use selected year tab
+  const snapYear = currentYear === 'all' ? mostRecentYear : currentYear;
+
+  if(!mostRecent){
+    document.getElementById('headerNetworth').textContent='—';
+    document.getElementById('headerSub').textContent='No data entered yet';
+    document.getElementById('headerChange').textContent='';
+    document.getElementById('statRow').innerHTML=`<div class="stat-card" style="grid-column:1/-1;text-align:center;color:var(--text3);padding:30px">No data yet — use the entry panel below!</div>`;
+    ['fireSection','assetGrid','growthGrid','milestoneRow','reGrid','reBarWrap','debtGrid','debtBarWrap','momGrid','goalsGrid','spendingStats','spendingList','yoyTable'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+    renderCharts();renderTable(snapYear);return;
+  }
+
+  // Find previous month for change calc — look across ALL years
+  const allMonths = getAllMonths();
+  const mostRecentIdx = allMonths.findIndex(m => m.year === mostRecent.year && m.month === mostRecent.month);
+  const prevData = mostRecentIdx > 0 ? allMonths[mostRecentIdx - 1] : null;
+
+  const change = prevData ? mostRecent.networth - prevData.networth : 0;
+  document.getElementById('headerNetworth').textContent = fmt(mostRecent.networth);
+  document.getElementById('headerSub').textContent = `Net Worth · ${MONTHS_SHORT[mostRecent.month]} ${mostRecent.year}`;
+  document.getElementById('headerChange').textContent = prevData ? fmtChange(change) + ' vs prior month' : 'First entry';
+  document.getElementById('headerChange').className = 'header-change ' + (change >= 0 ? 'up' : 'down');
+  document.getElementById('assetBreakdownMonth').textContent = `— ${MONTHS_SHORT[mostRecent.month]} ${mostRecent.year}`;
+
+  monthlyIncome = +(document.getElementById('entryIncome')?.value || 12000);
+
+  renderStats(mostRecent, prevData, mostRecent.year);
+  renderFire(mostRecent);
+  renderGrowthRate();
+  renderRealEstate(mostRecent, prevData);
+  renderSavingsRate(mostRecent);
+  renderAssets(mostRecent, prevData);
+  renderCharts();
+  renderMoM(mostRecent, prevData);
+  renderYoY();
+  renderDebtPayoff(mostRecent);
+  renderGoals(mostRecent.networth);
+  renderSpending(mostRecent.investments);
+  renderTable(snapYear);
+}
+
+// ── STAT CARDS ────────────────────────────────────────────────────────────────
+function renderStats(latest,prev,yr){
+  const change=prev?latest.networth-prev.networth:null;
+  const fp=(FIRE_TARGET-latest.leftToFire)/FIRE_TARGET*100;
+  document.getElementById('statRow').innerHTML=[
+    {label:'Net Worth',value:fmt(latest.networth),sub:`${MONTHS_SHORT[latest.month]} ${yr}`,change,pct:Math.min(latest.networth/1200000*100,100),color:'#2f4f4f'},
+    {label:'Total Assets',value:fmt(latest.totalAssets),sub:'All assets combined',change:prev?latest.totalAssets-prev.totalAssets:null,pct:Math.min(latest.totalAssets/2000000*100,100),color:'#3a9ec4'},
+    {label:'Investment Total',value:fmt(latest.investments),sub:'Investable assets',change:prev?latest.investments-prev.investments:null,pct:Math.min(latest.investments/600000*100,100),color:'#3a8a72'},
+    {label:'Left to FIRE',value:fmt(latest.leftToFire),sub:`${fp.toFixed(1)}% of the way there`,change:null,pct:Math.min(100-fp,100),color:'#a07040'},
+  ].map(c=>`<div class="stat-card">
+    <div class="stat-label">${c.label}</div>
+    <div class="stat-value" style="color:${c.color}">${c.value}</div>
+    <div class="stat-sub">${c.sub}</div>
+    ${c.change!=null?`<div class="stat-change ${c.change>=0?'up':'down'}">${fmtChange(c.change)}</div>`:''}
+    <div class="stat-bar"><div class="stat-bar-fill" style="width:${c.pct.toFixed(1)}%;background:${c.color}"></div></div>
+  </div>`).join('');
+}
+
+// ── FIRE PROGRESS ─────────────────────────────────────────────────────────────
+function renderFire(latest){
+  const invested=FIRE_TARGET-latest.leftToFire;
+  const pct=Math.min(invested/FIRE_TARGET*100,100).toFixed(1);
+  document.getElementById('fireSection').innerHTML=`
+    <h2>🔥 FIRE Progress — ${fmt(FIRE_TARGET)} Target</h2>
+    <div class="fire-bar-top"><span class="fire-bar-label">Investment Total toward FIRE Goal</span><span class="fire-bar-pct">${pct}%</span></div>
+    <div class="fire-track"><div class="fire-fill" style="width:${pct}%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text3);margin-top:4px"><span>$0</span><span>FIRE Target: ${fmt(FIRE_TARGET)}</span></div>
+    <div class="fire-stats">
+      <div class="fire-stat"><div class="fire-stat-label">Invested Toward FIRE</div><div class="fire-stat-value">${fmt(invested)}</div></div>
+      <div class="fire-stat"><div class="fire-stat-label">Still Needed</div><div class="fire-stat-value">${fmt(latest.leftToFire)}</div></div>
+      <div class="fire-stat"><div class="fire-stat-label">FIRE Target</div><div class="fire-stat-value">${fmt(FIRE_TARGET)}</div></div>
+    </div>`;
+}
+
+// ── #1: GROWTH RATE ───────────────────────────────────────────────────────────
+function renderGrowthRate(){
+  const all=getAllMonths();
+  if(all.length<2){document.getElementById('growthGrid').innerHTML='<div style="color:var(--text3)">Need more data to calculate growth rate.</div>';return;}
+
+  const first=all[0],last=all[all.length-1];
+  const monthsElapsed=((parseInt(last.year)-parseInt(first.year))*12)+(last.month-first.month);
+  const totalGrowth=last.networth-first.networth;
+  const totalGrowthPct=((last.networth/first.networth)-1)*100;
+  const annualizedRate=monthsElapsed>0?(Math.pow(last.networth/first.networth,12/monthsElapsed)-1)*100:0;
+  const monthlyAvg=monthsElapsed>0?totalGrowth/monthsElapsed:0;
+
+  // Project $1M date at current monthly avg
+  const current=last.networth;
+  const monthsTo1M=current<1000000?Math.ceil((1000000-current)/monthlyAvg):0;
+  const date1M=new Date(2026,4); // May 2026 (current)
+  date1M.setMonth(date1M.getMonth()+monthsTo1M);
+  const monthsTo2M=current<2000000?Math.ceil((2000000-current)/monthlyAvg):0;
+  const date2M=new Date(2026,4);
+  date2M.setMonth(date2M.getMonth()+monthsTo2M);
+
+  document.getElementById('growthGrid').innerHTML=[
+    {label:'Annualized Growth Rate',value:fmtPct(annualizedRate),sub:`Since ${MONTHS_SHORT[first.month]} ${first.year}`,color:annualizedRate>15?'var(--hit)':'var(--teal)'},
+    {label:'Total NW Growth',value:fmt(totalGrowth),sub:`${fmtPct(totalGrowthPct)} overall`,color:'#3a9ec4'},
+    {label:'Avg Monthly Gain',value:fmt(monthlyAvg),sub:'Net worth per month',color:'#3a8a72'},
+    {label:'Months of Data',value:monthsElapsed,sub:`${first.year} → ${last.year}`,color:'#708099'},
+  ].map(c=>`<div class="growth-card">
+    <div class="growth-card-label">${c.label}</div>
+    <div class="growth-card-value" style="color:${c.color}">${c.value}</div>
+    <div class="growth-card-sub">${c.sub}</div>
+  </div>`).join('');
+
+  document.getElementById('milestoneRow').innerHTML=`
+    <div class="milestone-item"><div class="milestone-label">Current Net Worth</div><div class="milestone-value">${fmt(current)}</div></div>
+    <div style="font-size:1.5rem;color:var(--border)">→</div>
+    <div class="milestone-item"><div class="milestone-label">$1M Milestone</div><div class="milestone-value" style="color:var(--gold)">${current>=1000000?'✅ Achieved!':'~'+date1M.toLocaleDateString('en-US',{month:'short',year:'numeric'})}</div></div>
+    <div style="font-size:1.5rem;color:var(--border)">→</div>
+    <div class="milestone-item"><div class="milestone-label">$2M Milestone</div><div class="milestone-value" style="color:var(--hit)">${current>=2000000?'✅ Achieved!':'~'+date2M.toLocaleDateString('en-US',{month:'short',year:'numeric'})}</div></div>
+    <div style="font-size:1.5rem;color:var(--border)">→</div>
+    <div class="milestone-item"><div class="milestone-label">FIRE Target ${fmt(FIRE_TARGET)}</div><div class="milestone-value" style="color:var(--teal)">~${(new Date(2026,4+(FIRE_TARGET-current>0?Math.ceil((FIRE_TARGET-current)/monthlyAvg):0))).toLocaleDateString('en-US',{month:'short',year:'numeric'})}</div></div>`;
+}
+
+// ── #2: REAL ESTATE EQUITY ────────────────────────────────────────────────────
+function renderRealEstate(latest,prev){
+  const home=latest.assets['Home']||0;
+  const mort=latest.liabs['Mortgage']||0;
+  const heloc=latest.liabs['HELOC']||0;
+  const equity=home-mort-heloc;
+  const ltv=home>0?(mort+heloc)/home*100:0;
+  const reGoal=600000;
+  const pct=Math.min(equity/reGoal*100,100);
+  const prevEquity=prev?(prev.assets['Home']||0)-(prev.liabs['Mortgage']||0)-(prev.liabs['HELOC']||0):null;
+  const change=prevEquity!=null?equity-prevEquity:null;
+
+  document.getElementById('reGrid').innerHTML=[
+    {label:'Home Value',value:fmt(home),sub:change!=null?`MoM: ${fmtChange(home-(prev?.assets['Home']||home))}`:'',color:'var(--re)'},
+    {label:'Total Mortgage + HELOC',value:fmt(mort+heloc),sub:`Mortgage: ${fmt(mort)} · HELOC: ${fmt(heloc)}`,color:'var(--miss)'},
+    {label:'Real Estate Equity',value:fmt(equity),sub:change!=null?`MoM: ${fmtChange(change)}`:'',color:equity>=600000?'var(--hit)':'var(--re)'},
+    {label:'Loan-to-Value (LTV)',value:ltv.toFixed(1)+'%',sub:'Lower is better',color:ltv<50?'var(--hit)':ltv<70?'var(--warn)':'var(--miss)'},
+    {label:'Age 35 RE Goal',value:fmt(reGoal),sub:'Dec 2029 target',color:'var(--re)'},
+    {label:'Gap to RE Goal',value:equity>=reGoal?'✅ Achieved!':fmt(reGoal-equity),sub:equity>=reGoal?'You hit it!':'Still needed',color:equity>=reGoal?'var(--hit)':'var(--warn)'},
+  ].map(c=>`<div class="re-card">
+    <div class="re-card-label">${c.label}</div>
+    <div class="re-card-value" style="color:${c.color}">${c.value}</div>
+    <div class="re-card-sub">${c.sub}</div>
+  </div>`).join('');
+
+  document.getElementById('reBarWrap').innerHTML=`
+    <div class="re-bar-top"><span class="re-bar-label">Progress to $600K Equity Goal</span><span class="re-bar-pct">${pct.toFixed(1)}%</span></div>
+    <div class="re-track"><div class="re-fill" style="width:${pct.toFixed(1)}%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text3);margin-top:4px"><span>$0</span><span>Goal: $600K by Dec 2029</span></div>`;
+}
+
+// ── #3: SAVINGS RATE ──────────────────────────────────────────────────────────
+function renderSavingsRate(latest){
+  const income=monthlyIncome;
+  // Estimate monthly savings as investment change or fallback to 3000
+  const allM=getAllMonths();
+  let monthlySavings=3000;
+  if(allM.length>=2){
+    const last=allM[allM.length-1],prev2=allM[allM.length-2];
+    const invChange=last.investments-prev2.investments;
+    if(invChange>0&&invChange<income) monthlySavings=invChange;
+  }
+  const sr=Math.min(monthlySavings/income*100,100);
+
+  const benches=[
+    {label:'Your Rate',pct:sr,sub:`~${fmt(monthlySavings)}/mo saved`},
+    {label:'FIRE Min',pct:30,sub:'30% minimum'},
+    {label:'FIRE Target',pct:50,sub:'50% = fast track'},
+    {label:'FIRE Elite',pct:70,sub:'70% = extreme'},
+  ];
+
+  function srColor(p){return p>=50?'var(--hit)':p>=30?'#3a9ec4':p>=15?'var(--warn)':'var(--miss)';}
+
+  document.getElementById('srGrid').innerHTML=benches.map(b=>{
+    const c=srColor(b.pct),p=Math.min(b.pct,100);
+    const circ=2*Math.PI*24,off=circ*(1-p/100);
+    return`<div class="sr-inline-card">
+      <div class="sr-ring">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <circle fill="none" stroke="var(--bg2)" stroke-width="6" cx="32" cy="32" r="24"/>
+          <circle fill="none" stroke="${c}" stroke-width="6" stroke-linecap="round" cx="32" cy="32" r="24" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/>
+        </svg>
+        <div class="ring-text" style="color:${c}">${p.toFixed(0)}%</div>
+      </div>
+      <div class="sr-label">${b.label}</div>
+      <div class="sr-sub">${b.sub}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── ASSET BREAKDOWN ───────────────────────────────────────────────────────────
+function renderAssets(latest,prev){
+  document.getElementById('assetGrid').innerHTML=
+    ASSET_KEYS.map(name=>{
+      const val=latest.assets[name]||0;
+      const pval=prev?.assets[name]||val;
+      const change=val-pval;
+      const col=ASSET_COLORS[name]||'#708099';
+      return`<div class="asset-card">
+        <div class="asset-name">${name}</div>
+        <div class="asset-value" style="color:${col}">${fmt(val)}</div>
+        <div class="asset-change ${change>0?'up':change<0?'down':'flat'}">${prev?fmtChange(change):'—'}</div>
+        <div class="asset-bar"><div class="asset-bar-fill" style="width:${val>0?Math.min(100,100):0}%;background:${col}"></div></div>
+      </div>`;
+    }).join('')+
+    LIAB_KEYS.map(name=>{
+      const val=latest.liabs[name]||0;
+      const pval=prev?.liabs[name]||val;
+      const change=val-pval;
+      return val>0?`<div class="asset-card" style="border-color:#fca5a580">
+        <div class="asset-name" style="color:var(--miss)">${name} (liability)</div>
+        <div class="asset-value" style="color:var(--miss)">-${fmt(val)}</div>
+        <div class="asset-change ${change<=0?'up':'down'}">${prev?fmtChange(-change):'—'}</div>
+        <div class="asset-bar"><div class="asset-bar-fill" style="width:${Math.min(val/600000*100,100)}%;background:#e08090"></div></div>
+      </div>`:'';
+    }).join('');
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────────────────
+function renderCharts(){
+  const allData=getAllMonths();
+  let labels,nwData,invData;
+  if(currentYear==='all'){
+    labels=allData.map(d=>`${d.year} ${MONTHS_SHORT[d.month]}`);
+    nwData=allData.map(d=>d.networth);invData=allData.map(d=>d.investments);
+    document.getElementById('chartSubtitle').textContent='Full net worth journey — all years';
+  } else {
+    const yd=getYearData(currentYear).filter(d=>d.hasData);
+    labels=yd.map(d=>MONTHS_SHORT[d.month]);nwData=yd.map(d=>d.networth);invData=yd.map(d=>d.investments);
+    document.getElementById('chartSubtitle').textContent=`Monthly net worth and investments — ${currentYear}`;
+  }
+  if(nwChartObj)nwChartObj.destroy();
+  nwChartObj=new Chart(document.getElementById('nwChart'),{type:'line',data:{labels,datasets:[
+    {label:'Net Worth',data:nwData,borderColor:'#2f4f4f',backgroundColor:'rgba(47,79,79,0.08)',borderWidth:2.5,pointRadius:3,pointBackgroundColor:'#2f4f4f',fill:true,tension:0.4},
+    {label:'Investments',data:invData,borderColor:'#3a9ec4',backgroundColor:'transparent',borderWidth:2,pointRadius:2,tension:0.4},
+  ]},options:{responsive:true,plugins:{legend:{labels:{color:'#8a8f9a',font:{size:11}}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmt(c.raw)}`}}},scales:{x:{ticks:{color:'#8a8f9a',maxRotation:45,font:{size:10}},grid:{color:'#e8e4d8'}},y:{ticks:{color:'#8a8f9a',callback:v=>fmt(v),font:{size:10}},grid:{color:'#e8e4d8'}}}}});
+
+  const snapYear=currentYear==='all'?'2026':currentYear;
+  const latest=getLatestMonth(snapYear);
+  if(pieChartObj)pieChartObj.destroy();
+  if(latest){
+    const entries=ASSET_KEYS.map(k=>({name:k,val:latest.assets[k]||0})).filter(e=>e.val>0);
+    pieChartObj=new Chart(document.getElementById('pieChart'),{type:'doughnut',data:{labels:entries.map(e=>e.name),datasets:[{data:entries.map(e=>e.val),backgroundColor:entries.map(e=>ASSET_COLORS[e.name]||'#708099'),borderColor:'#ffffff',borderWidth:2}]},options:{responsive:true,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#8a8f9a',font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(c.raw)}`}}}}});
+  }
+}
+
+// ── MoM ───────────────────────────────────────────────────────────────────────
+function renderMoM(latest,prev){
+  if(!prev){document.getElementById('momGrid').innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:0.8rem;padding:16px">Need at least 2 months of data.</div>';return;}
+  document.getElementById('momGrid').innerHTML=[
+    {label:'Net Worth',cur:latest.networth,prev:prev.networth},
+    {label:'Investments',cur:latest.investments,prev:prev.investments},
+    {label:'Left to FIRE',cur:latest.leftToFire,prev:prev.leftToFire,invert:true},
+    {label:'Total Assets',cur:latest.totalAssets,prev:prev.totalAssets},
+  ].map(item=>{
+    const change=item.cur-item.prev;
+    const good=item.invert?change<0:change>=0;
+    return`<div class="mom-card"><div class="mom-label">${item.label}</div><div class="mom-val ${good?'up':'down'}">${fmtChange(change)}</div><div style="font-size:0.65rem;color:var(--text3);margin-top:3px">vs prior month</div></div>`;
+  }).join('');
+}
+
+// ── #4: YEAR-OVER-YEAR ────────────────────────────────────────────────────────
+function renderYoY(){
+  const yearsWithData=ALL_YEARS.filter(yr=>getYearEndSnapshot(yr));
+  if(yearsWithData.length<2){document.getElementById('yoyTable').innerHTML='<tr><td style="padding:16px;color:var(--text3)">Need data from at least 2 years.</td></tr>';return;}
+
+  const snapshots=yearsWithData.map(yr=>({year:yr,...getYearEndSnapshot(yr)}));
+  const cols=snapshots.map(s=>`<th>${MONTHS_SHORT[s.month]} ${s.year}</th>`).join('');
+  const changeCols=snapshots.slice(1).map((_,i)=>`<th>YoY ${snapshots[i].year}→${snapshots[i+1].year}</th>`).join('');
+
+  let html=`<tr><th>Category</th>${cols}${changeCols}</tr>`;
+
+  const rows=[
+    {label:'Net Worth',key:'networth',fn:s=>s.networth},
+    {label:'Investments',key:'investments',fn:s=>s.investments},
+    {label:'Home Value',key:'home',fn:s=>s.assets['Home']||0},
+    {label:'Mortgage',key:'mort',fn:s=>s.liabs['Mortgage']||0},
+    {label:'RE Equity',key:'reEquity',fn:s=>(s.assets['Home']||0)-(s.liabs['Mortgage']||0)-(s.liabs['HELOC']||0)},
+    {label:'Brokerage',key:'brok',fn:s=>s.assets['Brokerage']||0},
+    {label:'401K + HSA',key:'k401',fn:s=>s.assets['401K + HSA']||0},
+    {label:'Left to FIRE',key:'ltf',fn:s=>s.leftToFire},
+  ];
+
+  rows.forEach(row=>{
+    const vals=snapshots.map(s=>row.fn(s));
+    const yoyChanges=vals.slice(1).map((v,i)=>v-vals[i]);
+    const isTotal=row.key==='networth';
+    html+=`<tr${isTotal?' class="yoy-total"':''}><td>${row.label}</td>
+      ${vals.map(v=>`<td>${fmt(v)}</td>`).join('')}
+      ${yoyChanges.map((c,i)=>{
+        const isGood=row.key==='ltf'?c<0:c>0;
+        return`<td class="${isGood?'yoy-up':'yoy-down'}">${fmtChange(c)}</td>`;
+      }).join('')}
+    </tr>`;
+  });
+
+  document.getElementById('yoyTable').innerHTML=html;
+}
+
+// ── #5: DEBT PAYOFF ───────────────────────────────────────────────────────────
+function renderDebtPayoff(latest){
+  const balance=latest.liabs['Mortgage']||0;
+  const heloc=latest.liabs['HELOC']||0;
+  if(balance===0){document.getElementById('debtGrid').innerHTML='<div style="color:var(--text3)">No mortgage data available.</div>';return;}
+
+  const monthlyRate=MORTGAGE_RATE/12;
+  // Calculate original monthly payment on $545k 30yr
+  const totalMonths=360;
+  const origPayment=MORTGAGE_ORIGINAL*(monthlyRate*Math.pow(1+monthlyRate,totalMonths))/(Math.pow(1+monthlyRate,totalMonths)-1);
+  // How many months remaining?
+  let bal=balance,months=0;
+  while(bal>0&&months<400){
+    const interest=bal*monthlyRate;
+    const principal=origPayment-interest;
+    bal-=principal;months++;
+  }
+  const payoffYear=2026+Math.floor((4+months)/12); // approx from May 2026
+  const payoffMo=(4+months)%12;
+  const totalInterestRemaining=origPayment*months-balance;
+  const monthlyPrincipal=origPayment-balance*monthlyRate;
+  const originalLoanRemaining=MORTGAGE_ORIGINAL;
+  const paidOff=MORTGAGE_ORIGINAL-balance;
+  const paidOffPct=paidOff/MORTGAGE_ORIGINAL*100;
+
+  document.getElementById('debtGrid').innerHTML=[
+    {label:'Current Balance',value:fmt(balance),sub:`+ HELOC: ${fmt(heloc)}`,color:'var(--miss)'},
+    {label:'Monthly Payment',value:fmt(Math.round(origPayment)),sub:`~${fmt(Math.round(monthlyPrincipal))} goes to principal`,color:'var(--warn)'},
+    {label:'Est. Payoff Date',value:`~${MONTHS_SHORT[payoffMo]} ${payoffYear}`,sub:`${months} months remaining`,color:'var(--teal)'},
+    {label:'Total Interest Left',value:fmt(Math.round(totalInterestRemaining)),sub:'At current pace',color:'#708099'},
+  ].map(c=>`<div class="debt-card">
+    <div class="debt-card-label">${c.label}</div>
+    <div class="debt-card-value" style="color:${c.color}">${c.value}</div>
+    <div class="debt-card-sub">${c.sub}</div>
+  </div>`).join('');
+
+  document.getElementById('debtBarWrap').innerHTML=`
+    <div class="debt-bar-top" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
+      <span style="font-size:0.78rem;font-weight:700;color:var(--warn)">Principal Paid Off</span>
+      <span style="font-family:'DM Serif Display',serif;font-size:1.2rem;color:var(--hit)">${paidOffPct.toFixed(1)}%</span>
+    </div>
+    <div class="debt-track"><div class="debt-fill" style="width:${paidOffPct.toFixed(1)}%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text3);margin-top:4px">
+      <span>Paid: ${fmt(Math.round(paidOff))}</span>
+      <span>Original: ${fmt(MORTGAGE_ORIGINAL)}</span>
+    </div>`;
+}
+
+// ── GOALS ─────────────────────────────────────────────────────────────────────
+function renderGoals(currentNW){
+  document.getElementById('goalsGrid').innerHTML=GOALS.map(g=>{
+    const pct=Math.min(currentNW/g.target*100,100);
+    const achieved=currentNW>=g.target;
+    const yearsLeft=g.age-CURRENT_AGE;
+    const status=achieved?'achieved':yearsLeft<=6?'current':'future';
+    return`<div class="goal-card ${status}">
+      <div class="goal-card-age">${g.age}</div>
+      <div class="goal-badge ${status}">${achieved?'✅ Achieved!':status==='current'?'🎯 In Range':'⏳ Future'}</div>
+      <div class="goal-card-label">Age ${g.age} Goal</div>
+      <div class="goal-card-amount">${fmt(g.target)}</div>
+      <div class="goal-card-date">By ${g.date} · ${yearsLeft} yrs away</div>
+      ${g.note?`<div class="goal-card-note">${g.note}</div>`:''}
+      <div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct.toFixed(1)}%;background:${achieved?'var(--hit)':status==='current'?'var(--gold)':'var(--slate)'}"></div></div>
+      <div style="font-size:0.68rem;color:var(--text3);margin-top:4px">${pct.toFixed(1)}% · ${fmt(currentNW)} of ${fmt(g.target)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── SPENDING ──────────────────────────────────────────────────────────────────
+function renderSpending(currentInvestments){
+  const reached=SPENDING.filter(s=>currentInvestments>=s.goal);
+  const purchased=SPENDING.filter(s=>s.purchased);
+  const pending=SPENDING.filter(s=>!s.purchased&&currentInvestments>=s.goal);
+  document.getElementById('spendingStats').innerHTML=`
+    <div class="s-stat">Reached <span>${reached.length}</span></div>
+    <div class="s-stat">Purchased <span>${purchased.length}</span></div>
+    <div class="s-stat">Pending <span>${pending.length}</span></div>
+    <div class="s-stat">Investments <span>${fmt(Math.round(currentInvestments/1000))+'K'}</span></div>`;
+  const sorted=[...SPENDING].sort((a,b)=>a.purchased===b.purchased?a.goal-b.goal:(a.purchased?-1:1));
+  document.getElementById('spendingList').innerHTML=sorted.map(s=>{
+    const unlocked=currentInvestments>=s.goal;
+    return`<div class="spend-item ${s.purchased?'purchased':'pending'}">
+      <div class="spend-dot ${s.purchased?'purchased':'pending'}"></div>
+      <div class="spend-info">
+        <div class="spend-name">${s.name}</div>
+        <div class="spend-goal">Unlocks at ${fmt(s.goal)}${s.purchased?' · ✅ Purchased':unlocked?' · 🔓 Unlocked!':''}</div>
+      </div>
+      <div class="spend-price">${fmt(s.price)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── TABLE ─────────────────────────────────────────────────────────────────────
+function renderTable(yr){
+  const el=document.getElementById('monthTable');
+  if(yr==='all'){el.innerHTML='<tr><td style="text-align:center;padding:20px;color:var(--text3)">Select a specific year to see the full monthly breakdown.</td></tr>';return;}
+  const yd=getYearData(yr).filter(d=>d.hasData);
+  if(yd.length===0){el.innerHTML=`<tr><td style="text-align:center;padding:20px;color:var(--text3)">No data for ${yr} yet. Use the entry panel below!</td></tr>`;return;}
+  const mLabels=yd.map(d=>MONTHS_SHORT[d.month]);
+  let html=`<tr><th>Category</th>${mLabels.map(m=>`<th>${m}</th>`).join('')}</tr>`;
+  html+=`<tr class="section-header"><td colspan="${mLabels.length+1}">Assets</td></tr>`;
+  ASSET_KEYS.forEach(name=>{html+=`<tr><td>${name}</td>${yd.map((d,i)=>{const val=d.assets[name]||0;const prev=i>0?yd[i-1].assets[name]||0:null;const cls=prev!=null?(val>prev?'cell-up':val<prev?'cell-down':''):'';return`<td class="${cls}">${val?fmt(val):'<span class="cell-empty">—</span>'}</td>`;}).join('')}</tr>`;});
+  html+=`<tr class="section-header"><td colspan="${mLabels.length+1}">Liabilities</td></tr>`;
+  LIAB_KEYS.forEach(name=>{const hasAny=yd.some(d=>(d.liabs[name]||0)>0);if(!hasAny)return;html+=`<tr><td>${name}</td>${yd.map((d,i)=>{const val=d.liabs[name]||0;const prev=i>0?yd[i-1].liabs[name]||0:null;const cls=prev!=null?(val<prev?'cell-up':val>prev?'cell-down':''):'';return`<td class="${cls}">${val?fmt(val):'<span class="cell-empty">—</span>'}</td>`;}).join('')}</tr>`;});
+  html+=`<tr class="summary-row"><td>Net Worth</td>${yd.map((d,i)=>{const cls=i>0?(d.networth>yd[i-1].networth?'cell-up':d.networth<yd[i-1].networth?'cell-down':''):'';return`<td class="${cls}">${fmt(d.networth)}</td>`;}).join('')}</tr>`;
+  html+=`<tr><td>Investment Total</td>${yd.map(d=>`<td>${fmt(d.investments)}</td>`).join('')}</tr>`;
+  html+=`<tr><td>Left to FIRE</td>${yd.map(d=>`<td>${fmt(d.leftToFire)}</td>`).join('')}</tr>`;
+  el.innerHTML=html;
+}
+
+// ── ENTRY PANEL ───────────────────────────────────────────────────────────────
+function buildEntryForm(){
+  const yrSel=document.getElementById('entryYear');
+  yrSel.innerHTML=ALL_YEARS.map(y=>`<option value="${y}">${y}</option>`).join('');
+  yrSel.value='2026';
+  const moSel=document.getElementById('entryMonth');
+  moSel.innerHTML=MONTHS_SHORT.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+  moSel.value='5';
+  document.getElementById('entryAssets').innerHTML=ASSET_KEYS.map(k=>`<div class="entry-field"><label>${k}</label><input type="number" id="ef_${k.replace(/[^a-zA-Z0-9]/g,'_')}" placeholder="0.00" step="0.01" oninput="updatePreview()"></div>`).join('');
+  document.getElementById('entryLiabilities').innerHTML=LIAB_KEYS.map(k=>`<div class="entry-field"><label>${k}</label><input type="number" id="ef_${k.replace(/[^a-zA-Z0-9]/g,'_')}" placeholder="0.00" step="0.01" oninput="updatePreview()"></div>`).join('');
+  document.getElementById('entrySummary').innerHTML=`
+    <div class="entry-field"><label>Net Worth (optional)</label><input type="number" id="ef_networth" placeholder="Auto-calculated" step="0.01" oninput="updatePreview()"></div>
+    <div class="entry-field"><label>Investment Total (optional)</label><input type="number" id="ef_investments" placeholder="Auto-calculated" step="0.01" oninput="updatePreview()"></div>
+    <div class="entry-field"><label>Left to FIRE (optional)</label><input type="number" id="ef_leftToFire" placeholder="Auto-calculated" step="0.01" oninput="updatePreview()"></div>`;
+}
+
+function fid(k){return'ef_'+k.replace(/[^a-zA-Z0-9]/g,'_');}
+function gfv(k){const el=document.getElementById(fid(k));return el&&el.value!==''?+el.value:null;}
+
+function loadEntryForm(){
+  const yr=document.getElementById('entryYear').value;
+  const mo=+document.getElementById('entryMonth').value;
+  const key=`${yr}-${mo}`;
+  const hist=HISTORICAL[yr];
+  let data=null;
+  if(hist){const idx=hist.months.indexOf(mo);if(idx!==-1){data={assets:{},liabs:{},networth:hist.networth[idx],investments:hist.investments[idx],leftToFire:hist.leftToFire[idx]};ASSET_KEYS.forEach(k=>data.assets[k]=hist.rows[k]?.[idx]||0);LIAB_KEYS.forEach(k=>data.liabs[k]=hist.rows[k]?.[idx]||0);}}
+  if(!data&&userData[key])data=userData[key];
+  ASSET_KEYS.forEach(k=>{const el=document.getElementById(fid(k));if(el){el.value=data?.assets?.[k]||'';el.classList.toggle('filled',!!(data?.assets?.[k]));}});
+  LIAB_KEYS.forEach(k=>{const el=document.getElementById(fid(k));if(el){el.value=data?.liabs?.[k]||'';el.classList.toggle('filled',!!(data?.liabs?.[k]));}});
+  ['networth','investments','leftToFire'].forEach(f=>{const el=document.getElementById('ef_'+f);if(el)el.value=data?.[f]||'';});
+  updatePreview();
+}
+
+function updatePreview(){
+  const assets={},liabs={};
+  ASSET_KEYS.forEach(k=>{const v=gfv(k);if(v!=null)assets[k]=v;});
+  LIAB_KEYS.forEach(k=>{const v=gfv(k);if(v!=null)liabs[k]=v;});
+  const tA=Object.values(assets).reduce((s,v)=>s+v,0);
+  const tL=Object.values(liabs).reduce((s,v)=>s+v,0);
+  const nwM=gfv('networth'),invM=gfv('investments'),ltfM=gfv('leftToFire');
+  const inv=invM!=null?invM:(assets['Brokerage']||0)+(assets['Roth IRA']||0)+(assets['401K + HSA']||0)+(assets['Crypto']||0);
+  const nw=nwM!=null?nwM:tA-tL;
+  const ltf=ltfM!=null?ltfM:FIRE_TARGET-inv;
+  if(tA>0||tL>0){
+    document.getElementById('entryPreview').style.display='block';
+    document.getElementById('previewGrid').innerHTML=[
+      {l:'Total Assets',v:fmt(tA)},{l:'Total Liabilities',v:fmt(tL)},
+      {l:'Net Worth',v:fmt(nw)},{l:'Investments',v:fmt(inv)},{l:'Left to FIRE',v:fmt(ltf)},
+    ].map(i=>`<div class="preview-item"><div class="pi-label">${i.l}</div><div class="pi-val">${i.v}</div></div>`).join('');
+  } else {
+    document.getElementById('entryPreview').style.display='none';
+  }
+}
+
+function saveEntry(){
+  const yr=document.getElementById('entryYear').value;
+  const mo=+document.getElementById('entryMonth').value;
+  const key=`${yr}-${mo}`;
+  const assets={},liabs={};
+  ASSET_KEYS.forEach(k=>{const v=gfv(k);assets[k]=v!=null?v:0;});
+  LIAB_KEYS.forEach(k=>{const v=gfv(k);liabs[k]=v!=null?v:0;});
+  const tA=Object.values(assets).reduce((s,v)=>s+v,0);
+  const tL=Object.values(liabs).reduce((s,v)=>s+v,0);
+  const invM=gfv('investments');
+  const inv=invM!=null?invM:(assets['Brokerage']||0)+(assets['Roth IRA']||0)+(assets['401K + HSA']||0)+(assets['Crypto']||0);
+  userData[key]={assets,liabs,networth:gfv('networth')??tA-tL,investments:inv,leftToFire:gfv('leftToFire')??FIRE_TARGET-inv};
+  try{localStorage.setItem('nw_userData',JSON.stringify(userData));}catch(e){}
+  const saved=document.getElementById('entrySaved');
+  saved.classList.add('show');setTimeout(()=>saved.classList.remove('show'),2500);
+  buildTabs();
+  if(currentYear===yr||currentYear==='all')renderAll();
+}
+
+function clearEntryForm(){
+  ASSET_KEYS.forEach(k=>{const el=document.getElementById(fid(k));if(el){el.value='';el.classList.remove('filled');}});
+  LIAB_KEYS.forEach(k=>{const el=document.getElementById(fid(k));if(el){el.value='';el.classList.remove('filled');}});
+  ['ef_networth','ef_investments','ef_leftToFire'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('entryPreview').style.display='none';
+}
+
+function deleteEntry(){
+  const yr=document.getElementById('entryYear').value;
+  const mo=+document.getElementById('entryMonth').value;
+  const key=`${yr}-${mo}`;
+  if(HISTORICAL[yr]?.months.includes(mo)){alert('Historical months cannot be deleted.');return;}
+  if(!userData[key]){alert('No saved data for this month.');return;}
+  if(!confirm(`Delete ${MONTHS_SHORT[mo]} ${yr}?`))return;
+  delete userData[key];
+  try{localStorage.setItem('nw_userData',JSON.stringify(userData));}catch(e){}
+  clearEntryForm();buildTabs();renderAll();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+try{const s=localStorage.getItem('nw_userData');if(s)userData=JSON.parse(s);}catch(e){}
+document.getElementById('entryIncome').addEventListener('change',()=>{monthlyIncome=+document.getElementById('entryIncome').value;renderAll();});
+buildTabs();
+buildEntryForm();
+loadEntryForm();
+setYear('2026');
+</script>
+</body>
+</html>
